@@ -293,7 +293,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <h1>EcoGuardián</h1>
     <h2>¡Salva el Planeta!</h2>
     <p>Recorre diferentes entornos y encuentra los desperdicios de agua 💧 y energía ⚡ antes de que se acabe el tiempo.</p>
-    <p style="font-size:11px;color:#888;margin-top:6px">🏠 Niveles 1-2: Casa · 🏢 Niveles 3+: Oficina</p>
+    <p style="font-size:11px;color:#888;margin-top:6px">🏠 Nivel 1: Tu Casa · 🏢 Nivel 2: La Oficina</p>
     <p style="font-size:11px;color:#888">💡 Apaga luces · 🚰 Cierra grifos · 🔌 Desconecta aparatos</p>
     <div class="et">🌱 Un hogar promedio desperdicia 30% de energía y agua por descuidos diarios</div>
     <button class="bg" onclick="startGame()">▶️ ¡Jugar!</button>
@@ -318,6 +318,60 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <div class="et" id="etp"></div>
     <button class="bg" id="en" onclick="nextLevel()">▶️ Siguiente</button>
     <button class="bs" onclick="restartGame()">🔄 Reiniciar</button>
+  </div>
+
+  <!-- FINAL REFLECTION SCREEN -->
+  <div class="ov" id="fs" style="display:none;overflow-y:auto">
+    <div class="big">🌍💚</div>
+    <h1>¡Misión Cumplida, EcoGuardián!</h1>
+    <h2 id="f-score"></h2>
+    <div id="f-stats" style="display:flex;gap:12px;margin:8px 0">
+      <div style="background:rgba(81,207,102,.12);border:1px solid rgba(81,207,102,.25);border-radius:10px;padding:8px 14px;text-align:center">
+        <div style="font-size:22px" id="f-water">0</div>
+        <div style="font-size:10px;color:#74c0fc">💧 Agua salvada</div>
+      </div>
+      <div style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.2);border-radius:10px;padding:8px 14px;text-align:center">
+        <div style="font-size:22px" id="f-energy">0</div>
+        <div style="font-size:10px;color:#ffd700">⚡ Energía salvada</div>
+      </div>
+    </div>
+
+    <div style="text-align:left;max-width:360px;margin:10px auto 0">
+      <p style="font-size:13px;color:#51cf66;font-weight:700;margin-bottom:6px">💧 ¿Cuánta agua puedes ahorrar?</p>
+      <p style="font-size:11px;color:#ccc;line-height:1.6;margin-bottom:10px">
+        • Cerrar el grifo al cepillarte: <b style="color:#74c0fc">12 litros</b> cada vez<br>
+        • Ducha de 5 min en vez de 10: <b style="color:#74c0fc">50 litros</b> por ducha<br>
+        • Reparar un grifo que gotea: <b style="color:#74c0fc">30 litros/día</b> (11,000 L/año)<br>
+        • Usar grifos automáticos en oficinas: <b style="color:#74c0fc">70%</b> menos consumo<br>
+        • Ducha en vez de bañera: <b style="color:#74c0fc">5 veces</b> menos agua
+      </p>
+
+      <p style="font-size:13px;color:#ffd700;font-weight:700;margin-bottom:6px">⚡ ¿Cuánta energía puedes ahorrar?</p>
+      <p style="font-size:11px;color:#ccc;line-height:1.6;margin-bottom:10px">
+        • Apagar luces al salir: <b style="color:#ffd43b">100 kWh/año</b> por foco<br>
+        • Desconectar cargadores sin uso: <b style="color:#ffd43b">50 kWh/año</b> de energía vampiro<br>
+        • Apagar PC de noche: <b style="color:#ffd43b">100 kWh/año</b> por equipo<br>
+        • Regular el AC (+1°C): <b style="color:#ffd43b">7%</b> menos consumo<br>
+        • Apagar TV/consola (no standby): <b style="color:#ffd43b">10W</b> que se suman 24/7<br>
+        • Apagar impresoras de oficina: <b style="color:#ffd43b">30W</b> en standby innecesario
+      </p>
+
+      <p style="font-size:13px;color:#51cf66;font-weight:700;margin-bottom:6px">🌱 Acciones que puedes tomar hoy</p>
+      <p style="font-size:11px;color:#ccc;line-height:1.6;margin-bottom:6px">
+        ✅ Revisa tu casa antes de salir: luces, grifos, aparatos<br>
+        ✅ Usa regletas con interruptor y apágalas de noche<br>
+        ✅ Cambia a focos LED (gastan 80% menos)<br>
+        ✅ Configura tu PC en modo suspensión automática<br>
+        ✅ Reporta grifos que gotean en casa y oficina<br>
+        ✅ Propón sensores de movimiento para luces en tu trabajo<br>
+        ✅ Comparte este juego para crear conciencia 🌍
+      </p>
+    </div>
+
+    <div class="et" style="margin-top:10px;max-width:340px">🌍 Si cada hogar aplicara estas acciones, se ahorrarían <b>millones de litros de agua</b> y <b>toneladas de CO₂</b> al año. ¡Tú puedes hacer la diferencia!</div>
+
+    <button class="bg" style="margin-top:14px" onclick="restartGame()">🔄 Jugar de Nuevo</button>
+    <button class="bs" style="margin-top:6px" onclick="shareGame()">📤 Compartir</button>
   </div>
 </div>
 
@@ -648,8 +702,8 @@ office:{
 //  TRANSITIONS between environments
 // ═══════════════
 const TRANSITIONS=[
-  {at:3, env:'office', emoji:'🏢🌍', title:'¡Nuevo Entorno: La Oficina!',
-   sub:'Nivel 3 — El desperdicio también ocurre en el trabajo',
+  {at:2, env:'office', emoji:'🏢🌍', title:'¡Nuevo Entorno: La Oficina!',
+   sub:'Nivel 2 — El desperdicio también ocurre en el trabajo',
    desc:'Ahora debes recorrer una oficina completa: recepción, cubículos, sala de juntas, cafetín, gerencia y hasta el cuarto de servidores.',
    tip:'🌱 Las oficinas gastan hasta 50% más energía que los hogares por metro cuadrado'},
 ];
@@ -664,7 +718,7 @@ const house=$('house');
 function curEnv(){return ENVS[G.envKey]}
 
 function getEnvForLevel(lv){
-  if(lv>=3) return 'office';
+  if(lv>=2) return 'office';
   return 'house';
 }
 
@@ -866,7 +920,7 @@ function placeItems(){
   document.querySelectorAll('.ii,.dr').forEach(e=>e.remove());
   G.items=[];
   const maxItems=env.rooms.reduce((s,r)=>s+r.items.length,0);
-  const count=Math.min(5+G.level*2,maxItems);
+  const count=maxItems;
   const all=[];
   env.rooms.forEach(rm=>{
     rm.items.forEach(it=>{
@@ -997,7 +1051,7 @@ function initLevel(){
     }
   }
 
-  G.time=Math.max(60,120-(G.level-1)*8);G.score=0;
+  G.time=G.level===1?120:150;G.score=0;
   buildHouse();placeItems();setPlayer();
   G.running=true;$('td').style.color='#ff6b6b';
   $('td').textContent=fmtTime(G.time);
@@ -1017,6 +1071,17 @@ function endLevel(won){
   const sv=G.items.filter(i=>!i.active).length;
   const pct=G.items.length?sv/G.items.length:0;
   const stars=pct>=1?'⭐⭐⭐':pct>=.7?'⭐⭐':pct>=.4?'⭐':'💔';
+
+  // track items saved by type across levels
+  G.waterSaved=(G.waterSaved||0)+G.items.filter(i=>!i.active&&i.type==='water').length;
+  G.energySaved=(G.energySaved||0)+G.items.filter(i=>!i.active&&i.type!=='water').length;
+
+  // if won level 2 → show final reflection
+  if(won && G.level===2){
+    showFinalScreen();
+    return;
+  }
+
   $('ee').textContent=won?'🎉🌍':'⏰';
   $('etl').textContent=won?`¡Nivel ${G.level} completado!`:'¡Se acabó el tiempo!';
   $('est').textContent=stars;
@@ -1024,14 +1089,34 @@ function endLevel(won){
   $('etk').textContent=`Tareas: ${sv}/${G.items.length}`;
   const tips=G.items.map(i=>i.tip).filter(Boolean);
   $('etp').textContent='🌱 '+(tips[Math.floor(Math.random()*tips.length)]||'Cada acción cuenta');
-  const nextEnv=getEnvForLevel(G.level+1);
-  const nextLabel=nextEnv!==G.envKey?` (${ENVS[nextEnv].icon} ${ENVS[nextEnv].name})`:'';
-  $('en').textContent=won?`▶️ Siguiente Nivel${nextLabel}`:'🔄 Reintentar';
+
+  if(won && G.level===1){
+    $('en').textContent='▶️ Siguiente: 🏢 La Oficina';
+  } else {
+    $('en').textContent='🔄 Reintentar';
+  }
   $('es').style.display='flex';
 }
 
+function showFinalScreen(){
+  $('f-score').textContent=`Puntuación final: ${G.total} ⭐`;
+  $('f-water').textContent=G.waterSaved||0;
+  $('f-energy').textContent=G.energySaved||0;
+  $('fs').style.display='flex';
+}
+
+function shareGame(){
+  const url='https://amdavil.github.io/eco-guardian-game/';
+  const text='🌍 ¡Jugué EcoGuardián y aprendí a ahorrar agua y energía! ¿Puedes superar mi puntaje de '+G.total+' ⭐? Juega aquí: ';
+  if(navigator.share){
+    navigator.share({title:'EcoGuardián',text:text,url:url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text+url).then(()=>showMsg('📋 ¡Enlace copiado al portapapeles!'));
+  }
+}
+
 function nextLevel(){if(G.items.every(i=>!i.active))G.level++;$('es').style.display='none';initLevel()}
-function restartGame(){G.level=1;G.total=0;G.envKey='house';$('es').style.display='none';initLevel()}
+function restartGame(){G.level=1;G.total=0;G.waterSaved=0;G.energySaved=0;G.envKey='house';$('es').style.display='none';$('fs').style.display='none';initLevel()}
 
 // ═══════════════
 //  INPUT
