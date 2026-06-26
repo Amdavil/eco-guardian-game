@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌍 EcoGuardián - Salva el Planeta</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-action:none;user-select:none;height:100vh;width:100vw}
+#gc{position:relative;width:100vw;height:100vh;overflow:hidden}
+
+/* HUD */
+#hud{position:absolute;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;padding:5px 8px;background:linear-gradient(180deg,rgba(0,0,0,.9),rgba(0,0,0,.3) 85%,transparent);color:#fff;font-size:12px}
+.st{display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.5);padding:3px 9px;border-radius:14px;font-size:11px;backdrop-filter:blur(4px)}
+#sd{color:#ffd700;font-weight:700}#td{color:#ff6b6b}#tkd{color:#51cf66}#ld{color:#74c0fc}
+#pw{position:absolute;top:34px;left:8px;right:8px;z-index:100;height:4px;background:rgba(255,255,255,.08);border-radius:2px}
+#pf{height:100%;background:linear-gradient(90deg,#51cf66,#ffd43b);border-radius:2px;transition:width .3s;width:0%}
+
+/* EXTERIOR */
+#exterior{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0}
+.ext-tree{position:absolute;z-index:1;pointer-events:none;text-align:center;line-height:1}
+.ext-shadow{position:absolute;border-radius:50%;background:rgba(0,0,0,.18);filter:blur(4px);z-index:0;pointer-events:none}
+.ext-path{position:absolute;z-index:1;pointer-events:none;border-radius:4px}
+.ext-fence{position:absolute;z-index:1;pointer-events:none}
+
+/* HOUSE */
+#house{position:absolute;z-index:2}
+
+/* ROOM */
+.room{position:absolute;overflow:hidden}
+.room-floor{position:absolute;top:0;left:0;right:0;bottom:0}
+.room-glow{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:2}
+.room-label{position:absolute;top:13px;left:0;right:0;text-align:center;font-size:8px;text-transform:uppercase;letter-spacing:2.5px;color:rgba(255,255,255,.3);z-index:15;font-weight:700}
+
+/* WALLS — thick with highlight/shadow for depth */
+.wo-t,.wo-b,.wo-l,.wo-r{position:absolute;z-index:12}
+.wo-t{top:0;left:0;right:0;height:10px;background:linear-gradient(180deg,#e8dcc8 0%,#d4c4a8 40%,#c0b090 100%);box-shadow:0 3px 6px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.3)}
+.wo-b{bottom:0;left:0;right:0;height:10px;background:linear-gradient(0deg,#c4b498 0%,#d0c0a4 50%,#c0b090 100%);box-shadow:0 -2px 5px rgba(0,0,0,.3),inset 0 -1px 0 rgba(255,255,255,.15)}
+.wo-l{top:0;bottom:0;left:0;width:10px;background:linear-gradient(90deg,#ddd0b8 0%,#c8b898 50%,#c0b090 100%);box-shadow:3px 0 6px rgba(0,0,0,.35),inset 1px 0 0 rgba(255,255,255,.25)}
+.wo-r{top:0;bottom:0;right:0;width:10px;background:linear-gradient(270deg,#ddd0b8 0%,#c8b898 50%,#c0b090 100%);box-shadow:-3px 0 6px rgba(0,0,0,.35),inset -1px 0 0 rgba(255,255,255,.25)}
+
+/* baseboard inside rooms */
+.baseboard-t,.baseboard-b,.baseboard-l,.baseboard-r{position:absolute;z-index:11}
+.baseboard-t{top:10px;left:10px;right:10px;height:3px;background:linear-gradient(180deg,#a08060,#8a6a4a);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.baseboard-b{bottom:10px;left:10px;right:10px;height:3px;background:linear-gradient(0deg,#a08060,#8a6a4a);box-shadow:0 -1px 2px rgba(0,0,0,.2)}
+.baseboard-l{top:10px;bottom:10px;left:10px;width:3px;background:linear-gradient(90deg,#a08060,#8a6a4a);box-shadow:1px 0 2px rgba(0,0,0,.2)}
+.baseboard-r{top:10px;bottom:10px;right:10px;width:3px;background:linear-gradient(270deg,#a08060,#8a6a4a);box-shadow:-1px 0 2px rgba(0,0,0,.2)}
+
+/* internal walls */
+.wi-h{position:absolute;height:8px;background:linear-gradient(180deg,#ddd0b8,#c4b498);box-shadow:0 3px 5px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.2);z-index:13}
+.wi-v{position:absolute;width:8px;background:linear-gradient(90deg,#ddd0b8,#c4b498);box-shadow:3px 0 5px rgba(0,0,0,.35),inset 1px 0 0 rgba(255,255,255,.2);z-index:13}
+
+/* doors */
+.door-h{position:absolute;height:8px;z-index:14;overflow:hidden}
+.door-v{position:absolute;width:8px;z-index:14;overflow:hidden}
+.door-h-inner,.door-v-inner{position:absolute;top:0;left:0;right:0;bottom:0}
+.door-h-inner{background:linear-gradient(180deg,#7a5a28,#9a7538);border-top:1px solid #a08040;border-bottom:1px solid #5a4018}
+.door-v-inner{background:linear-gradient(90deg,#7a5a28,#9a7538);border-left:1px solid #a08040;border-right:1px solid #5a4018}
+.door-knob{position:absolute;width:4px;height:4px;background:radial-gradient(circle,#daa520,#b8860b);border-radius:50%;box-shadow:0 0 2px rgba(0,0,0,.4)}
+
+/* windows on outer walls */
+.win-ext{position:absolute;z-index:15;overflow:hidden;border:2px solid #b0a080;border-radius:1px}
+.win-glass{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(135,200,250,.35),rgba(100,170,230,.2),rgba(180,220,255,.3));box-shadow:inset 0 0 8px rgba(100,180,240,.2)}
+.win-frame{position:absolute;background:#b0a080}
+.win-frame-h{left:0;right:0;height:1px;top:50%}
+.win-frame-v{top:0;bottom:0;width:1px;left:50%}
+
+/* ceiling light fixture — home (warm) */
+.ceil-light{position:absolute;z-index:16;pointer-events:none}
+.ceil-light-body{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,200,.6),rgba(255,220,150,.3),transparent 70%);border:1px solid rgba(255,220,150,.25);box-shadow:0 0 20px rgba(255,220,150,.15)}
+
+/* ═══ OFFICE THEME OVERRIDES ═══ */
+/* office outer walls: steel gray/blue */
+.theme-office .wo-t{background:linear-gradient(180deg,#8090a0 0%,#6a7888 40%,#586878 100%);box-shadow:0 3px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+.theme-office .wo-b{background:linear-gradient(0deg,#586878 0%,#6a7888 50%,#586878 100%);box-shadow:0 -2px 5px rgba(0,0,0,.4),inset 0 -1px 0 rgba(255,255,255,.08)}
+.theme-office .wo-l{background:linear-gradient(90deg,#7a8a9a 0%,#687888 50%,#586878 100%);box-shadow:3px 0 6px rgba(0,0,0,.45),inset 1px 0 0 rgba(255,255,255,.12)}
+.theme-office .wo-r{background:linear-gradient(270deg,#7a8a9a 0%,#687888 50%,#586878 100%);box-shadow:-3px 0 6px rgba(0,0,0,.45),inset -1px 0 0 rgba(255,255,255,.12)}
+/* office baseboard: dark rubber */
+.theme-office .baseboard-t{background:linear-gradient(180deg,#3a3a3a,#2a2a2a);box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.theme-office .baseboard-b{background:linear-gradient(0deg,#3a3a3a,#2a2a2a);box-shadow:0 -1px 2px rgba(0,0,0,.3)}
+.theme-office .baseboard-l{background:linear-gradient(90deg,#3a3a3a,#2a2a2a);box-shadow:1px 0 2px rgba(0,0,0,.3)}
+.theme-office .baseboard-r{background:linear-gradient(270deg,#3a3a3a,#2a2a2a);box-shadow:-1px 0 2px rgba(0,0,0,.3)}
+/* office internal walls: glass partitions */
+.theme-office .wi-h{background:linear-gradient(180deg,rgba(140,180,210,.4),rgba(120,160,190,.25));box-shadow:0 2px 4px rgba(0,0,0,.25);border-top:1px solid rgba(180,210,230,.3);border-bottom:1px solid rgba(80,120,150,.2)}
+.theme-office .wi-v{background:linear-gradient(90deg,rgba(140,180,210,.4),rgba(120,160,190,.25));box-shadow:2px 0 4px rgba(0,0,0,.25);border-left:1px solid rgba(180,210,230,.3);border-right:1px solid rgba(80,120,150,.2)}
+/* office doors: modern gray */
+.theme-office .door-h-inner{background:linear-gradient(180deg,#707880,#8a9098);border-top:1px solid #9aa0a8;border-bottom:1px solid #505860}
+.theme-office .door-v-inner{background:linear-gradient(90deg,#707880,#8a9098);border-left:1px solid #9aa0a8;border-right:1px solid #505860}
+.theme-office .door-knob{background:radial-gradient(circle,#c0c0c0,#909090);box-shadow:0 0 3px rgba(0,0,0,.5)}
+/* office windows: large glass panels */
+.theme-office .win-ext{border:2px solid #607080;border-radius:0}
+.theme-office .win-glass{background:linear-gradient(135deg,rgba(120,180,240,.4),rgba(80,150,220,.25),rgba(160,200,250,.35));box-shadow:inset 0 0 12px rgba(80,150,220,.25)}
+.theme-office .win-frame{background:#607080}
+/* office ceiling: fluorescent tube panel */
+.theme-office .ceil-light-body{width:36px;height:8px;border-radius:2px;background:linear-gradient(180deg,rgba(230,245,255,.9),rgba(210,230,250,.6),rgba(230,245,255,.7));border:1px solid rgba(200,225,250,.4);box-shadow:0 0 35px rgba(210,230,255,.35),0 0 60px rgba(200,220,255,.15)}
+
+/* office room glow boost */
+.theme-office .room-glow{opacity:.9}
+.theme-office .room-label{color:rgba(255,255,255,.4);font-size:7px;letter-spacing:3px}
+
+/* office floor: drop ceiling grid overlay */
+.fl-office-drop{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0px,rgba(255,255,255,.025) 1px,transparent 1px,transparent 35px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0px,rgba(255,255,255,.025) 1px,transparent 1px,transparent 35px);
+  pointer-events:none;z-index:4;
+}
+
+/* FLOOR TEXTURES */
+.fl-wood{
+  background:
+    repeating-linear-gradient(95deg,
+      rgba(139,105,20,.22) 0px,rgba(154,117,32,.18) 3px,rgba(139,105,20,.22) 18px,
+      rgba(122,90,16,.25) 20px,rgba(139,105,20,.22) 38px);
+  background-size:38px 100%;
+}
+.fl-wood::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(0deg,transparent 0px,transparent 55px,rgba(0,0,0,.06) 55px,rgba(0,0,0,.06) 57px);
+}
+.fl-tile{
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 1px,transparent 1px,transparent 28px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 1px,transparent 1px,transparent 28px),
+    linear-gradient(135deg,rgba(160,195,210,.12),rgba(140,175,195,.08));
+}
+.fl-carpet{
+  background:url("data:image/svg+xml,%3Csvg width='8' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='8' height='8' fill='%23281840'/%3E%3Ccircle cx='2' cy='2' r='1' fill='%23322050'/%3E%3Ccircle cx='6' cy='6' r='1' fill='%23322050'/%3E%3C/svg%3E");
+  background-size:8px 8px;
+  opacity:.5;
+}
+.fl-concrete{
+  background:
+    repeating-linear-gradient(0deg,transparent 0,transparent 58px,rgba(0,0,0,.08) 58px,rgba(0,0,0,.08) 60px),
+    repeating-linear-gradient(90deg,transparent 0,transparent 58px,rgba(0,0,0,.08) 58px,rgba(0,0,0,.08) 60px),
+    linear-gradient(135deg,rgba(100,100,100,.12),rgba(80,80,80,.08));
+}
+.fl-kitchen{
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 24px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 24px),
+    linear-gradient(135deg,rgba(140,120,80,.12),rgba(120,100,65,.08));
+}
+
+/* FLOOR — office */
+.fl-office{
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 1px,transparent 1px,transparent 22px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 1px,transparent 1px,transparent 22px),
+    linear-gradient(135deg,rgba(150,155,170,.14),rgba(130,135,150,.1));
+}
+.fl-office-carpet{
+  background:url("data:image/svg+xml,%3Csvg width='8' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='8' height='8' fill='%23283040'/%3E%3Ccircle cx='2' cy='2' r='1.2' fill='%23303848'/%3E%3Ccircle cx='6' cy='6' r='1.2' fill='%23303848'/%3E%3C/svg%3E");
+  background-size:8px 8px;opacity:.6;
+}
+
+/* FURNITURE */
+.fur{position:absolute;z-index:10;pointer-events:none}
+.fur-b{border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative}
+.fur-shadow{position:absolute;bottom:-3px;left:2px;right:2px;height:6px;background:rgba(0,0,0,.2);border-radius:50%;filter:blur(3px);z-index:-1}
+.fur-e{line-height:1;filter:drop-shadow(1px 1px 2px rgba(0,0,0,.4))}
+
+/* specific */
+.f-sofa .fur-b{background:linear-gradient(145deg,#6b4830,#8a6040,#6b4830);width:85px;height:38px;border-radius:8px 8px 6px 6px;border-top:3px solid #7a5838;box-shadow:inset 0 -4px 8px rgba(0,0,0,.2),2px 4px 8px rgba(0,0,0,.4)}
+.f-sofa .fur-b::after{content:'';position:absolute;top:4px;left:6px;right:6px;height:8px;background:rgba(0,0,0,.1);border-radius:4px}
+.f-bed .fur-b{background:linear-gradient(180deg,#f0e8dc,#e0d4c4);width:68px;height:85px;border-radius:10px 10px 6px 6px;border:3px solid #9a8570;box-shadow:inset 0 0 12px rgba(0,0,0,.08),2px 4px 10px rgba(0,0,0,.35)}
+.f-bed .fur-b::before{content:'';position:absolute;top:0;left:0;right:0;height:18px;background:linear-gradient(180deg,#d0c0a8,#c0b098);border-radius:8px 8px 0 0;border-bottom:2px solid #b0a088}
+.f-bed .fur-b::after{content:'';position:absolute;top:22px;left:8px;right:8px;bottom:8px;background:linear-gradient(135deg,rgba(180,200,220,.3),rgba(160,180,200,.2));border-radius:4px;border:1px solid rgba(180,200,220,.2)}
+.f-table .fur-b{background:linear-gradient(145deg,#7a5a3c,#6b4c32);width:55px;height:38px;border-radius:5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),2px 3px 8px rgba(0,0,0,.4)}
+.f-counter .fur-b{background:linear-gradient(180deg,#999,#b0b0b0,#888);height:30px;border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 3px 6px rgba(0,0,0,.3);border-bottom:2px solid #666}
+.f-counter .fur-b::after{content:'';position:absolute;top:2px;left:4px;right:4px;height:1px;background:rgba(255,255,255,.15)}
+.f-toilet .fur-b{background:linear-gradient(180deg,#f0f0f0,#e0e0e0,#d0d0d0);width:26px;height:34px;border-radius:13px 13px 8px 8px;border:2px solid #bbb;box-shadow:inset 0 -3px 6px rgba(0,0,0,.08),1px 3px 6px rgba(0,0,0,.3)}
+.f-toilet .fur-b::after{content:'';position:absolute;top:3px;left:5px;right:5px;height:10px;border:1px solid #ccc;border-radius:6px}
+.f-tub .fur-b{background:linear-gradient(180deg,#e8e8e8,#d8d8d8);width:60px;height:30px;border-radius:22px;border:3px solid #c0c0c0;box-shadow:inset 0 2px 8px rgba(0,0,0,.1),2px 3px 8px rgba(0,0,0,.3)}
+.f-tub .fur-b::after{content:'';position:absolute;top:4px;left:6px;right:6px;bottom:4px;background:rgba(100,180,220,.12);border-radius:16px;border:1px solid rgba(100,180,220,.15)}
+.f-sink .fur-b{background:linear-gradient(180deg,#e0e0e0,#ccc);width:32px;height:22px;border-radius:10px;border:2px solid #aaa;box-shadow:1px 2px 5px rgba(0,0,0,.3)}
+.f-sink .fur-b::after{content:'';position:absolute;top:3px;left:6px;right:6px;height:6px;background:rgba(100,180,220,.15);border-radius:6px}
+.f-car .fur-b{background:linear-gradient(180deg,#4a6fa5,#3a5a8a,#2a4a7a);width:58px;height:85px;border-radius:14px 14px 10px 10px;box-shadow:inset 0 -8px 15px rgba(0,0,0,.2),3px 5px 12px rgba(0,0,0,.4)}
+.f-car .fur-b::before{content:'';position:absolute;top:12px;left:6px;right:6px;height:20px;background:rgba(135,200,250,.2);border-radius:6px}
+.f-car .fur-b::after{content:'';position:absolute;bottom:8px;left:8px;right:8px;height:3px;background:rgba(255,50,50,.3);border-radius:2px}
+.f-desk .fur-b{background:linear-gradient(180deg,#7a5a3c,#6b4c32);width:58px;height:32px;border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),2px 3px 8px rgba(0,0,0,.4);border-bottom:2px solid #5a3e22}
+.f-ns .fur-b{background:linear-gradient(180deg,#7a5a3c,#6b4c32);width:24px;height:24px;border-radius:3px;box-shadow:1px 2px 5px rgba(0,0,0,.4)}
+.f-ns .fur-b::after{content:'';position:absolute;top:4px;left:4px;right:4px;height:3px;background:rgba(0,0,0,.15);border-radius:1px}
+.f-washer .fur-b{background:linear-gradient(180deg,#ddd,#eee,#ddd);width:36px;height:36px;border-radius:6px;border:2px solid #aaa;box-shadow:2px 3px 8px rgba(0,0,0,.3)}
+.f-washer .fur-b::after{content:'';position:absolute;top:8px;left:8px;right:8px;bottom:8px;border:2px solid #bbb;border-radius:50%;background:rgba(100,160,200,.08)}
+.f-shelf .fur-b{background:linear-gradient(180deg,#7a5a3c,#6b4c32,#5a3e22);width:48px;height:16px;border-radius:2px;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.f-shelf .fur-b::after{content:'';position:absolute;bottom:0;left:3px;right:3px;height:1px;background:rgba(255,255,255,.1)}
+.f-fridge .fur-b{background:linear-gradient(180deg,#e0e0e0,#d0d0d0,#c0c0c0);width:32px;height:50px;border-radius:4px;border:2px solid #aaa;box-shadow:2px 3px 8px rgba(0,0,0,.35)}
+.f-fridge .fur-b::before{content:'';position:absolute;top:48%;left:2px;right:2px;height:1px;background:#999}
+.f-fridge .fur-b::after{content:'';position:absolute;top:8px;right:4px;width:2px;height:8px;background:#999;border-radius:1px}
+.f-stove .fur-b{background:linear-gradient(180deg,#444,#555,#444);width:36px;height:28px;border-radius:3px;border:2px solid #333;box-shadow:2px 3px 6px rgba(0,0,0,.4)}
+.f-stove .fur-b::after{content:'';position:absolute;top:5px;left:5px;width:8px;height:8px;border:2px solid #666;border-radius:50%}
+
+/* office furniture */
+.f-odesk .fur-b{background:linear-gradient(180deg,#5a5a5a,#6a6a6a);width:52px;height:30px;border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),2px 3px 8px rgba(0,0,0,.4);border-bottom:2px solid #444}
+.f-odesk .fur-b::after{content:'';position:absolute;top:3px;left:4px;right:4px;height:1px;background:rgba(255,255,255,.06)}
+.f-cubicle .fur-b{background:linear-gradient(180deg,#4a5560,#3a4550);width:48px;height:48px;border-radius:2px;border:2px solid #5a6570;box-shadow:2px 3px 8px rgba(0,0,0,.4)}
+.f-cubicle .fur-b::before{content:'';position:absolute;top:2px;left:2px;right:2px;bottom:50%;background:rgba(80,140,200,.06);border-radius:1px}
+.f-cubicle .fur-b::after{content:'';position:absolute;bottom:4px;left:6px;right:6px;height:12px;background:linear-gradient(180deg,#555,#666);border-radius:2px}
+.f-conf-table .fur-b{background:linear-gradient(180deg,#5a4030,#6a4c38);width:90px;height:42px;border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),3px 4px 10px rgba(0,0,0,.45)}
+.f-conf-chair .fur-b{background:linear-gradient(180deg,#333,#444);width:16px;height:16px;border-radius:50%;border:1px solid #555;box-shadow:1px 2px 4px rgba(0,0,0,.3)}
+.f-whiteboard .fur-b{background:linear-gradient(180deg,#e8e8e8,#f4f4f4);width:60px;height:10px;border-radius:2px;border:2px solid #999;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.f-whiteboard .fur-b::after{content:'';position:absolute;top:1px;left:3px;right:3px;height:3px;background:rgba(50,120,200,.1);border-radius:1px}
+.f-coffee-machine .fur-b{background:linear-gradient(180deg,#444,#555,#444);width:24px;height:28px;border-radius:4px;border:2px solid #333;box-shadow:2px 3px 6px rgba(0,0,0,.4)}
+.f-coffee-machine .fur-b::after{content:'';position:absolute;top:6px;left:4px;right:4px;height:6px;background:radial-gradient(circle,rgba(200,100,50,.3),transparent);border-radius:2px}
+.f-water-cooler .fur-b{background:linear-gradient(180deg,#88c8e8,#a0d8f0,#78b8d8);width:20px;height:32px;border-radius:4px 4px 6px 6px;border:2px solid #6aa8c8;box-shadow:2px 3px 6px rgba(0,0,0,.3)}
+.f-water-cooler .fur-b::before{content:'';position:absolute;top:-4px;left:3px;right:3px;height:8px;background:linear-gradient(180deg,rgba(100,180,220,.5),rgba(80,160,200,.3));border-radius:3px 3px 0 0}
+.f-printer .fur-b{background:linear-gradient(180deg,#ddd,#eee,#ccc);width:30px;height:22px;border-radius:3px;border:2px solid #aaa;box-shadow:2px 3px 6px rgba(0,0,0,.3)}
+.f-printer .fur-b::after{content:'';position:absolute;top:3px;left:4px;right:4px;height:4px;background:#333;border-radius:1px}
+.f-plant .fur-b{background:radial-gradient(circle,#3a5a2a,#2a4a1a);width:18px;height:18px;border-radius:50%;border:2px solid #5a3a20;box-shadow:1px 2px 4px rgba(0,0,0,.3)}
+.f-sofa-office .fur-b{background:linear-gradient(145deg,#3a3a4a,#4a4a5a,#3a3a4a);width:65px;height:28px;border-radius:6px;border-top:2px solid #5a5a6a;box-shadow:inset 0 -3px 6px rgba(0,0,0,.2),2px 4px 8px rgba(0,0,0,.4)}
+
+/* rug */
+.f-rug{position:absolute;z-index:3;pointer-events:none}
+.f-rug-in{border-radius:6px;border:2px solid rgba(255,255,255,.04)}
+/* mirror */
+.f-mirror{position:absolute;z-index:11;pointer-events:none;background:linear-gradient(180deg,rgba(180,220,255,.35),rgba(140,190,240,.2));border:2px solid #a09070;border-radius:3px;box-shadow:inset 0 0 8px rgba(180,220,255,.15)}
+
+/* INTERACTIVE ITEMS */
+.ii{position:absolute;font-size:22px;cursor:pointer;z-index:40;line-height:1;transition:transform .2s}
+.ii:hover{transform:scale(1.3)}
+.ii.wa{animation:wa 1.2s infinite}
+.ii.sa{filter:brightness(.4) saturate(.15);pointer-events:none}
+.ii-gl{position:absolute;width:32px;height:32px;border-radius:50%;top:-5px;left:-5px;pointer-events:none}
+.ii.wa .ii-gl{background:radial-gradient(circle,rgba(255,50,50,.2),transparent 70%)}
+@keyframes wa{0%,100%{filter:drop-shadow(0 0 4px rgba(255,50,50,.5))}50%{filter:drop-shadow(0 0 14px rgba(255,50,50,1))}}
+
+.pr{position:absolute;width:44px;height:44px;border:2px solid rgba(81,207,102,.5);border-radius:50%;z-index:38;pointer-events:none;display:none;animation:rp 1s infinite}
+@keyframes rp{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.7}50%{transform:translate(-50%,-50%) scale(1.35);opacity:.15}}
+
+/* PLAYER */
+#pl{position:absolute;font-size:28px;z-index:50;transition:left .1s ease-out,top .1s ease-out;line-height:1;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))}
+#ps{position:absolute;width:20px;height:7px;background:rgba(0,0,0,.28);border-radius:50%;z-index:49;transition:left .1s ease-out,top .1s ease-out}
+
+/* EFFECTS */
+.ft{position:absolute;z-index:60;font-size:14px;font-weight:700;pointer-events:none;animation:fu 1s forwards;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+@keyframes fu{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px)}}
+.dr{position:absolute;font-size:9px;animation:dp .8s linear forwards;pointer-events:none;z-index:35}
+@keyframes dp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(15px)}}
+
+/* MESSAGE */
+#mb{position:absolute;bottom:125px;left:50%;transform:translateX(-50%);z-index:150;background:rgba(0,0,0,.85);color:#fff;padding:6px 14px;border-radius:16px;font-size:12px;opacity:0;transition:opacity .3s;text-align:center;max-width:90%;pointer-events:none;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.06)}
+#mb.vi{opacity:1}
+
+/* CONTROLS */
+#dp{position:absolute;bottom:16px;left:14px;z-index:200;display:grid;grid-template-columns:46px 46px 46px;grid-template-rows:46px 46px 46px;gap:3px;opacity:.6}
+.db{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:10px;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.db:active{background:rgba(255,255,255,.28)}
+.de{background:none;border:none}
+#ab{position:absolute;bottom:32px;right:16px;z-index:200;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#51cf66,#2b8a3e);border:2px solid rgba(255,255,255,.2);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.5;transition:opacity .3s,box-shadow .3s;-webkit-tap-highlight-color:transparent}
+#ab.nr{opacity:1;box-shadow:0 0 18px rgba(81,207,102,.6)}
+#dh{display:none;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);z-index:200;color:rgba(255,255,255,.25);font-size:10px}
+@media(min-width:769px){#dp{display:none}#ab{display:none}#dh{display:block}}
+@media(max-width:768px){#dh{display:none}}
+
+/* OVERLAYS */
+.ov{position:absolute;top:0;left:0;right:0;bottom:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,8,24,.96);color:#fff;text-align:center;padding:20px}
+.ov h1{font-size:24px;margin-bottom:4px}.ov h2{font-size:16px;color:#999;margin-bottom:10px}
+.ov .big{font-size:52px;margin:6px 0}.ov p{font-size:13px;color:#bbb;max-width:330px;line-height:1.5;margin:3px 0}
+.ov button{margin-top:14px;padding:11px 34px;font-size:16px;border:none;border-radius:24px;cursor:pointer;font-weight:700;-webkit-tap-highlight-color:transparent}
+.bg{background:linear-gradient(135deg,#51cf66,#2b8a3e);color:#fff;box-shadow:0 4px 16px rgba(81,207,102,.4)}
+.bg:active{transform:scale(.95)}
+.bs{font-size:12px;padding:8px 22px;margin-top:6px;background:linear-gradient(135deg,#748ffc,#4263eb);color:#fff;box-shadow:0 3px 10px rgba(66,99,235,.35);border:none;border-radius:18px;cursor:pointer}
+.et{margin-top:12px;padding:8px 12px;background:rgba(81,207,102,.1);border-radius:8px;border:1px solid rgba(81,207,102,.2);font-size:11px;color:#a0d995;max-width:300px}
+.sr{font-size:30px;margin:6px 0}
+</style>
+</head>
+<body>
+<div id="gc">
+  <div id="hud">
+    <div class="st">⭐ <span id="sd">0</span></div>
+    <div class="st">🏠 <span id="ld">Nivel 1</span></div>
+    <div class="st">⏱️ <span id="td">2:00</span></div>
+    <div class="st">✅ <span id="tkd">0/0</span></div>
+  </div>
+  <div id="pw"><div id="pf"></div></div>
+  <div id="exterior"></div>
+  <div id="house"></div>
+  <div id="pl">🧑</div>
+  <div id="ps"></div>
+  <div class="pr" id="px"></div>
+  <div id="mb"></div>
+  <div id="dp">
+    <div class="de"></div><div class="db" data-d="up">⬆️</div><div class="de"></div>
+    <div class="db" data-d="left">⬅️</div><div class="de"></div><div class="db" data-d="right">➡️</div>
+    <div class="de"></div><div class="db" data-d="down">⬇️</div><div class="de"></div>
+  </div>
+  <div id="ab">👆</div>
+  <div id="dh">⌨️ Flechas/WASD mover · Espacio interactuar</div>
+
+  <div class="ov" id="ss">
+    <div class="big">🏡🌍</div>
+    <h1>EcoGuardián</h1>
+    <h2>¡Salva el Planeta!</h2>
+    <p>Recorre diferentes entornos y encuentra los desperdicios de agua 💧 y energía ⚡ antes de que se acabe el tiempo.</p>
+    <p style="font-size:11px;color:#888;margin-top:6px">🏠 Niveles 1-2: Casa · 🏢 Niveles 3+: Oficina</p>
+    <p style="font-size:11px;color:#888">💡 Apaga luces · 🚰 Cierra grifos · 🔌 Desconecta aparatos</p>
+    <div class="et">🌱 Un hogar promedio desperdicia 30% de energía y agua por descuidos diarios</div>
+    <button class="bg" onclick="startGame()">▶️ ¡Jugar!</button>
+  </div>
+
+  <!-- TRANSITION SCREEN -->
+  <div class="ov" id="ts" style="display:none">
+    <div class="big" id="t-emoji"></div>
+    <h1 id="t-title"></h1>
+    <h2 id="t-sub"></h2>
+    <p id="t-desc"></p>
+    <div class="et" id="t-tip"></div>
+    <button class="bg" onclick="dismissTransition()">▶️ ¡Vamos!</button>
+  </div>
+
+  <div class="ov" id="es" style="display:none">
+    <div class="big" id="ee">🌍</div>
+    <h1 id="etl"></h1>
+    <div class="sr" id="est"></div>
+    <p id="esc"></p>
+    <p id="etk"></p>
+    <div class="et" id="etp"></div>
+    <button class="bg" id="en" onclick="nextLevel()">▶️ Siguiente</button>
+    <button class="bs" onclick="restartGame()">🔄 Reiniciar</button>
+  </div>
+</div>
+
+<script>
+const U=70;
+
+// ═══════════════════════════════════════
+//  ENVIRONMENTS
+// ═══════════════════════════════════════
+
+const ENVS={
+
+// ─── CASA ───
+house:{
+  name:'Casa',icon:'🏠',
+  W:10,H:7,
+  exteriorBg:`
+    radial-gradient(ellipse at 50% 50%,rgba(25,60,25,.5),rgba(15,40,15,.7)),
+    repeating-conic-gradient(rgba(30,70,30,.18) 0% 25%,rgba(22,55,22,.12) 0% 50%) 0 0/14px 14px`,
+  exteriorItems:[
+    {e:'🌳',x:-.8,y:1,s:32},{e:'🌳',x:-.7,y:4.5,s:28},{e:'🌲',x:10.5,y:.5,s:30},
+    {e:'🌲',x:10.6,y:3,s:26},{e:'🌳',x:10.4,y:5.5,s:30},
+    {e:'🌿',x:-.3,y:0,s:18},{e:'🌿',x:-.3,y:6.5,s:16},
+    {e:'🌻',x:10.2,y:1.8,s:16},{e:'🌷',x:-.3,y:3,s:14},
+    {e:'🪴',x:4,y:-.6,s:18},{e:'🌺',x:7,y:-.5,s:14},
+    {e:'🌿',x:10.2,y:4.5,s:16},
+    {e:'🌳',x:4.5,y:7.5,s:28},{e:'🌲',x:8,y:7.4,s:26},
+  ],
+  path:{rx:1.8,rw:.9,side:'bottom'},
+  rooms:[
+    {
+      id:'sala',name:'Sala',floor:'fl-wood',
+      x:0,y:0,w:4.5,h:3.5,
+      ambient:'rgba(255,210,120,.14)',
+      furniture:[
+        {t:'f-sofa',x:.5,y:2,e:'🛋️',es:20},
+        {t:'f-table',x:1.8,y:1.3,e:'',es:0},
+        {t:'f-shelf',x:3.8,y:.3,e:'📚',es:12},
+        {t:'f-rug',x:1,y:.9,rw:75,rh:55,c:'#6a3535'},
+        {t:'ceil',x:2.2,y:1.5},
+        {t:'win',x:1.2,y:-.08,fw:55,fh:12},{t:'win',x:2.8,y:-.08,fw:55,fh:12},
+      ],
+      items:[
+        {emoji:'📺',type:'energy',x:3.6,y:1.2,pts:12,on:'📺 TV encendida y nadie la ve',off:'📺 ¡TV apagada!',tip:'Una TV en standby consume hasta 10W'},
+        {emoji:'💡',type:'light',x:2.2,y:.4,pts:10,on:'💡 Lámpara encendida de día',off:'💡 ¡Lámpara apagada!',tip:'Aprovecha la luz natural'},
+        {emoji:'🔌',type:'energy',x:.6,y:2.8,pts:8,on:'🔌 Cargador conectado sin celular',off:'🔌 ¡Desconectado!',tip:'Energía vampiro: cargadores sin uso'},
+        {emoji:'🌀',type:'energy',x:3.3,y:2.5,pts:10,on:'🌀 Ventilador sin nadie',off:'🌀 ¡Ventilador apagado!',tip:'Ventiladores enfrían personas, no cuartos'},
+      ]
+    },
+    {
+      id:'cocina',name:'Cocina',floor:'fl-kitchen',
+      x:4.5,y:0,w:3.5,h:3.5,
+      ambient:'rgba(255,230,150,.15)',
+      furniture:[
+        {t:'f-counter',x:.15,y:.2,cw:'90%',e:'',es:0},
+        {t:'f-fridge',x:2.8,y:.3,e:'',es:0},
+        {t:'f-stove',x:.4,y:.2,e:'',es:0},
+        {t:'f-table',x:1.3,y:2,e:'🍽️',es:16},
+        {t:'ceil',x:1.7,y:1.3},
+        {t:'win',x:1,y:-.08,fw:50,fh:12},
+      ],
+      items:[
+        {emoji:'🚰',type:'water',x:1.8,y:.3,pts:12,on:'🚰 ¡Grifo abierto!',off:'🚰 ¡Grifo cerrado!',tip:'Un grifo abierto gasta 12 litros/min'},
+        {emoji:'🔥',type:'energy',x:.5,y:.5,pts:15,on:'🔥 ¡Hornilla encendida!',off:'🔥 ¡Hornilla apagada!',tip:'Hornilla sin uso = peligro de gas'},
+        {emoji:'💡',type:'light',x:2.5,y:.3,pts:10,on:'💡 Luz de cocina encendida',off:'💡 ¡Luz apagada!',tip:'Usa luces LED: 80% menos consumo'},
+        {emoji:'🧊',type:'energy',x:2.9,y:1,pts:12,on:'🧊 ¡Nevera abierta!',off:'🧊 ¡Nevera cerrada!',tip:'1 min nevera abierta = 1h consumo extra'},
+      ]
+    },
+    {
+      id:'lavadero',name:'Lavadero',floor:'fl-tile',
+      x:8,y:0,w:2,h:3.5,
+      ambient:'rgba(200,220,255,.1)',
+      furniture:[
+        {t:'f-washer',x:.4,y:.4,e:'🫧',es:12},
+        {t:'f-shelf',x:.5,y:2.5,e:'🧴',es:12},
+        {t:'ceil',x:.9,y:1.5},
+      ],
+      items:[
+        {emoji:'🚰',type:'water',x:1.2,y:.6,pts:12,on:'🚰 Manguera goteando',off:'🚰 ¡Manguera cerrada!',tip:'Manguera goteando = 30 litros/día'},
+        {emoji:'💡',type:'light',x:.8,y:2.8,pts:10,on:'💡 Luz del lavadero encendida',off:'💡 ¡Luz apagada!',tip:'Apaga la luz al salir'},
+      ]
+    },
+    {
+      id:'bano',name:'Baño',floor:'fl-tile',
+      x:0,y:3.5,w:2.5,h:3.5,
+      ambient:'rgba(180,220,255,.12)',
+      furniture:[
+        {t:'f-toilet',x:.3,y:2.3,e:'🚽',es:14},
+        {t:'f-tub',x:1.2,y:2.4,e:'',es:0},
+        {t:'f-sink',x:.5,y:.5,e:'',es:0},
+        {t:'f-mirror',x:.4,y:.2,fw:35,fh:12},
+        {t:'ceil',x:1.2,y:1.5},
+      ],
+      items:[
+        {emoji:'🚿',type:'water',x:1.8,y:1,pts:15,on:'🚿 ¡Ducha corriendo!',off:'🚿 ¡Ducha cerrada!',tip:'5 min ducha = 50 litros'},
+        {emoji:'🚰',type:'water',x:.7,y:.6,pts:12,on:'🚰 Grifo lavamanos abierto',off:'🚰 ¡Grifo cerrado!',tip:'Cierra el grifo al cepillarte'},
+        {emoji:'💡',type:'light',x:1.2,y:.2,pts:10,on:'💡 Luz del baño encendida',off:'💡 ¡Luz apagada!',tip:'El baño: donde más se olvidan luces'},
+        {emoji:'🛁',type:'water',x:1.3,y:2.8,pts:15,on:'🛁 ¡Bañera llenándose!',off:'🛁 ¡Agua cerrada!',tip:'Tina gasta 5x más que ducha'},
+      ]
+    },
+    {
+      id:'dormitorio',name:'Dormitorio',floor:'fl-carpet',
+      x:2.5,y:3.5,w:4,h:3.5,
+      ambient:'rgba(200,180,255,.1)',
+      furniture:[
+        {t:'f-bed',x:1,y:.9,e:'🛏️',es:20},
+        {t:'f-ns',x:.2,y:1.4,e:'',es:0},{t:'f-ns',x:2.8,y:1.4,e:'',es:0},
+        {t:'f-desk',x:2.8,y:.2,e:'',es:0},
+        {t:'f-rug',x:.8,y:2.3,rw:60,rh:40,c:'#3a2555'},
+        {t:'f-shelf',x:.3,y:.2,e:'📚',es:11},
+        {t:'ceil',x:1.8,y:1.8},
+        {t:'win',x:1.2,y:-.08,fw:55,fh:12},
+      ],
+      items:[
+        {emoji:'💻',type:'energy',x:2.9,y:.35,pts:10,on:'💻 Laptop encendida sin usar',off:'💻 ¡Laptop suspendida!',tip:'Suspende tu PC si no la usas 15+ min'},
+        {emoji:'💡',type:'light',x:1.8,y:.2,pts:10,on:'💡 Luz encendida de día',off:'💡 ¡Luz apagada!',tip:'Abre cortinas: luz natural gratis'},
+        {emoji:'🎮',type:'energy',x:3.2,y:2.3,pts:8,on:'🎮 Consola encendida sin jugar',off:'🎮 ¡Consola apagada!',tip:'Consolas en reposo ≈ encendidas'},
+        {emoji:'🔌',type:'energy',x:.3,y:2.8,pts:8,on:'🔌 Regleta con standby',off:'🔌 ¡Regleta desconectada!',tip:'Desconecta regleta de noche: -10% luz'},
+      ]
+    },
+    {
+      id:'garage',name:'Garaje',floor:'fl-concrete',
+      x:6.5,y:3.5,w:3.5,h:3.5,
+      ambient:'rgba(200,180,130,.07)',
+      furniture:[
+        {t:'f-car',x:1.3,y:.8,e:'🚗',es:22},
+        {t:'f-shelf',x:.2,y:.2,e:'🧰',es:12},{t:'f-shelf',x:.2,y:.7,e:'🔧',es:12},
+        {t:'ceil',x:1.8,y:1.8},
+      ],
+      items:[
+        {emoji:'💡',type:'light',x:2.8,y:.3,pts:10,on:'💡 Luz del garaje encendida',off:'💡 ¡Luz apagada!',tip:'Luces del garaje: olvidadas horas'},
+        {emoji:'🔌',type:'energy',x:.4,y:2.5,pts:8,on:'🔌 Herramienta conectada',off:'🔌 ¡Desconectada!',tip:'Desconecta herramientas al terminar'},
+        {emoji:'❄️',type:'energy',x:2.8,y:2.5,pts:12,on:'❄️ Congelador semi-abierto',off:'❄️ ¡Congelador cerrado!',tip:'Congelador mal cerrado = doble trabajo'},
+      ]
+    }
+  ],
+  walls:[
+    {a:'h',x:0,y:3.5,l:10,doors:[{at:1.8,sz:.9},{at:3.5,sz:.9},{at:7.5,sz:1}]},
+    {a:'v',x:4.5,y:0,l:3.5,doors:[{at:1.5,sz:.9}]},
+    {a:'v',x:8,y:0,l:3.5,doors:[{at:1.8,sz:.8}]},
+    {a:'v',x:2.5,y:3.5,l:3.5,doors:[{at:1.2,sz:.8}]},
+    {a:'v',x:6.5,y:3.5,l:3.5,doors:[{at:1.5,sz:1}]},
+  ]
+},
+
+// ─── OFICINA ───
+office:{
+  name:'Oficina',icon:'🏢',
+  theme:'office',
+  W:11,H:7,
+  exteriorBg:`
+    radial-gradient(ellipse at 50% 60%,rgba(50,50,60,.5),rgba(30,30,40,.8)),
+    repeating-linear-gradient(0deg,rgba(80,80,90,.06) 0px,rgba(80,80,90,.06) 1px,transparent 1px,transparent 40px),
+    repeating-linear-gradient(90deg,rgba(80,80,90,.06) 0px,rgba(80,80,90,.06) 1px,transparent 1px,transparent 40px),
+    #181820`,
+  foundationColor:'#28283a',
+  exteriorItems:[
+    // parking lot - bottom
+    {e:'🚗',x:1.5,y:7.8,s:20},{e:'🚙',x:3,y:7.8,s:18},{e:'🚗',x:4.5,y:7.8,s:20},
+    {e:'🚕',x:6.5,y:7.8,s:18},{e:'🚗',x:8,y:7.8,s:20},{e:'🚙',x:9.5,y:7.8,s:18},
+    {e:'🅿️',x:5.5,y:7.2,s:22},
+    // sidewalk items
+    {e:'🚶',x:-.5,y:2,s:16},{e:'🚶‍♀️',x:11.5,y:3,s:16},
+    // street elements
+    {e:'🚌',x:-.8,y:5.5,s:24},{e:'🏪',x:11.4,y:1,s:20},
+    {e:'🏢',x:-.7,y:-.3,s:26},{e:'🏬',x:11.3,y:-.3,s:24},
+    {e:'🏦',x:11.4,y:5,s:20},
+    // sparse landscaping
+    {e:'🌳',x:-.3,y:3.5,s:20},{e:'🌳',x:11.2,y:6,s:18},
+    {e:'🪴',x:-.1,y:0,s:14},{e:'🪴',x:11,y:-.1,s:14},
+    // lamp posts
+    {e:'🪧',x:-.2,y:1,s:14},{e:'🪧',x:11.1,y:4.5,s:14},
+  ],
+  path:{rx:4.5,rw:1.2,side:'bottom'},
+  rooms:[
+    {
+      id:'recepcion',name:'Recepción',floor:'fl-office',
+      x:0,y:0,w:3.5,h:3,
+      ambient:'rgba(200,225,255,.22)',
+      furniture:[
+        {t:'f-counter',x:.2,y:.3,cw:'80%',e:'',es:0},
+        {t:'f-sofa-office',x:.4,y:1.8,e:'',es:0},
+        {t:'f-plant',x:2.8,y:.3,e:'🌿',es:14},
+        {t:'f-plant',x:.2,y:2.5,e:'🪴',es:14},
+        {t:'f-plant',x:2.8,y:2,e:'🌱',es:12},
+        {t:'ceil',x:1,y:.8},{t:'ceil',x:2.5,y:.8},{t:'ceil',x:1.7,y:2},
+        {t:'win',x:.6,y:-.08,fw:60,fh:12},{t:'win',x:1.8,y:-.08,fw:60,fh:12},
+      ],
+      items:[
+        {emoji:'💡',type:'light',x:1.5,y:.3,pts:10,on:'💡 Fluorescentes de recepción encendidos sin necesidad',off:'💡 ¡Fluorescentes apagados!',tip:'Usa sensores de movimiento en áreas comunes'},
+        {emoji:'📺',type:'energy',x:2.5,y:1.2,pts:12,on:'📺 Pantalla informativa encendida fuera de horario',off:'📺 ¡Pantalla apagada!',tip:'Las pantallas de lobby consumen 24/7 innecesariamente'},
+        {emoji:'❄️',type:'energy',x:.5,y:.5,pts:12,on:'❄️ AC de recepción a tope sin visitantes',off:'❄️ ¡AC regulado!',tip:'Cada grado menos de AC = 7% más energía'},
+      ]
+    },
+    {
+      id:'cubiculos',name:'Cubículos',floor:'fl-office-carpet',
+      x:3.5,y:0,w:4,h:3,
+      ambient:'rgba(210,230,255,.2)',
+      furniture:[
+        {t:'f-cubicle',x:.3,y:.4,e:'🖥️',es:14},
+        {t:'f-cubicle',x:1.3,y:.4,e:'🖥️',es:14},
+        {t:'f-cubicle',x:2.3,y:.4,e:'🖥️',es:14},
+        {t:'f-cubicle',x:.3,y:1.6,e:'🖥️',es:14},
+        {t:'f-cubicle',x:1.3,y:1.6,e:'🖥️',es:14},
+        {t:'f-cubicle',x:2.3,y:1.6,e:'🖥️',es:14},
+        {t:'f-printer',x:3.2,y:2,e:'',es:0},
+        {t:'ceil',x:1,y:.8},{t:'ceil',x:2.5,y:.8},{t:'ceil',x:1,y:2},{t:'ceil',x:2.5,y:2},
+      ],
+      items:[
+        {emoji:'🖥️',type:'energy',x:.5,y:.6,pts:10,on:'🖥️ Monitor encendido sin empleado',off:'🖥️ ¡Monitor apagado!',tip:'Un monitor en standby gasta 5W innecesarios'},
+        {emoji:'💡',type:'light',x:2,y:.2,pts:10,on:'💡 Panel fluorescente encendido en área vacía',off:'💡 ¡Fluorescentes apagados!',tip:'Apaga los fluorescentes al salir del área'},
+        {emoji:'🔌',type:'energy',x:1.5,y:1.8,pts:8,on:'🔌 Cargador de laptop sin usar',off:'🔌 ¡Cargador desconectado!',tip:'Desconecta cargadores al final del día'},
+        {emoji:'🖨️',type:'energy',x:3.3,y:2.2,pts:10,on:'🖨️ Impresora multifuncional en standby',off:'🖨️ ¡Impresora apagada!',tip:'Las impresoras en standby consumen 30W'},
+        {emoji:'💻',type:'energy',x:2.5,y:.6,pts:10,on:'💻 PC de escritorio encendida toda la noche',off:'💻 ¡PC apagada!',tip:'Apagar PCs de noche ahorra 100 kWh/año por equipo'},
+      ]
+    },
+    {
+      id:'sala-juntas',name:'Sala de Juntas',floor:'fl-office-carpet',
+      x:7.5,y:0,w:3.5,h:3,
+      ambient:'rgba(220,230,250,.18)',
+      furniture:[
+        {t:'f-conf-table',x:.6,y:.8,e:'',es:0},
+        {t:'f-conf-chair',x:.5,y:.5,e:'',es:0},{t:'f-conf-chair',x:1.3,y:.5,e:'',es:0},
+        {t:'f-conf-chair',x:2.1,y:.5,e:'',es:0},{t:'f-conf-chair',x:2.9,y:.5,e:'',es:0},
+        {t:'f-conf-chair',x:.5,y:1.8,e:'',es:0},{t:'f-conf-chair',x:1.3,y:1.8,e:'',es:0},
+        {t:'f-conf-chair',x:2.1,y:1.8,e:'',es:0},{t:'f-conf-chair',x:2.9,y:1.8,e:'',es:0},
+        {t:'f-whiteboard',x:.5,y:.15,e:'',es:0},
+        {t:'f-plant',x:3,y:2.2,e:'🪴',es:12},
+        {t:'ceil',x:1,y:.8},{t:'ceil',x:2.5,y:.8},{t:'ceil',x:1.7,y:2},
+        {t:'win',x:.8,y:-.08,fw:60,fh:12},{t:'win',x:2,y:-.08,fw:60,fh:12},
+      ],
+      items:[
+        {emoji:'📺',type:'energy',x:2.8,y:.2,pts:12,on:'📺 Proyector encendido sin reunión',off:'📺 ¡Proyector apagado!',tip:'Un proyector encendido sin uso gasta 300W'},
+        {emoji:'💡',type:'light',x:1.5,y:.2,pts:10,on:'💡 Fluorescentes de sala vacía encendidos',off:'💡 ¡Fluorescentes apagados!',tip:'Salas de reunión vacías con luz = desperdicio común'},
+        {emoji:'❄️',type:'energy',x:.4,y:2.2,pts:12,on:'❄️ AC encendido en sala de juntas vacía',off:'❄️ ¡AC apagado!',tip:'Programa el AC solo para horas de reunión'},
+      ]
+    },
+    {
+      id:'bano-of',name:'Baño',floor:'fl-tile',
+      x:0,y:3,w:2.5,h:4,
+      ambient:'rgba(200,230,250,.16)',
+      furniture:[
+        {t:'f-toilet',x:.3,y:1,e:'🚽',es:14},
+        {t:'f-toilet',x:.3,y:2.2,e:'🚽',es:14},
+        {t:'f-sink',x:1.2,y:.4,e:'',es:0},
+        {t:'f-sink',x:1.8,y:.4,e:'',es:0},
+        {t:'f-mirror',x:1,y:.15,fw:45,fh:10},
+        {t:'ceil',x:.8,y:1},{t:'ceil',x:1.5,y:2.5},
+      ],
+      items:[
+        {emoji:'🚰',type:'water',x:1.3,y:.5,pts:12,on:'🚰 Grifo automático trabado abierto',off:'🚰 ¡Grifo reparado!',tip:'En oficinas los grifos automáticos ahorran 70% de agua'},
+        {emoji:'💡',type:'light',x:1,y:.2,pts:10,on:'💡 Luz del baño encendida sin nadie',off:'💡 ¡Luz apagada!',tip:'Instala sensores de movimiento en baños'},
+        {emoji:'🚰',type:'water',x:1.9,y:.5,pts:12,on:'🚰 Grifo goteando por empaque dañado',off:'🚰 ¡Grifo reparado!',tip:'Un grifo que gotea pierde 30 litros/día'},
+      ]
+    },
+    {
+      id:'cafetin',name:'Cafetín',floor:'fl-office',
+      x:2.5,y:3,w:3,h:4,
+      ambient:'rgba(240,230,210,.18)',
+      furniture:[
+        {t:'f-counter',x:.15,y:.25,cw:'85%',e:'',es:0},
+        {t:'f-coffee-machine',x:.3,y:.3,e:'☕',es:12},
+        {t:'f-water-cooler',x:2.2,y:.3,e:'',es:0},
+        {t:'f-fridge',x:2.3,y:1.2,e:'',es:0},
+        {t:'f-table',x:.8,y:2,e:'',es:0},
+        {t:'f-table',x:.8,y:3,e:'',es:0},
+        {t:'ceil',x:1,y:1},{t:'ceil',x:2,y:2.5},
+      ],
+      items:[
+        {emoji:'☕',type:'energy',x:.4,y:.5,pts:10,on:'☕ Cafetera industrial encendida desde la mañana',off:'☕ ¡Cafetera apagada!',tip:'Las cafeteras encendidas todo el día gastan 1000W'},
+        {emoji:'💡',type:'light',x:1.5,y:.2,pts:10,on:'💡 Fluorescentes del cafetín encendidos',off:'💡 ¡Fluorescentes apagados!',tip:'Usa temporizadores en áreas comunes'},
+        {emoji:'🚰',type:'water',x:1,y:.3,pts:12,on:'🚰 Grifo del fregadero abierto',off:'🚰 ¡Grifo cerrado!',tip:'Lava los trastes con el grifo cerrado'},
+        {emoji:'🧊',type:'energy',x:2.4,y:1.5,pts:12,on:'🧊 Refrigerador de oficina abierto',off:'🧊 ¡Refrigerador cerrado!',tip:'El refri de la oficina se abre 50+ veces al día'},
+      ]
+    },
+    {
+      id:'oficina-gerencia',name:'Gerencia',floor:'fl-office-carpet',
+      x:5.5,y:3,w:2.5,h:4,
+      ambient:'rgba(230,225,210,.16)',
+      furniture:[
+        {t:'f-desk',x:.6,y:.6,e:'',es:0},
+        {t:'f-shelf',x:.2,y:.2,e:'📁',es:11},
+        {t:'f-sofa-office',x:.5,y:2.8,e:'',es:0},
+        {t:'f-plant',x:2,y:.3,e:'🌿',es:14},
+        {t:'f-plant',x:2,y:3,e:'🪴',es:12},
+        {t:'f-rug',x:.5,y:1.5,rw:55,rh:45,c:'#2a2838'},
+        {t:'ceil',x:.8,y:1},{t:'ceil',x:1.5,y:2.5},
+        {t:'win',x:.6,y:-.08,fw:55,fh:12},
+      ],
+      items:[
+        {emoji:'💻',type:'energy',x:.8,y:.7,pts:10,on:'💻 PC del gerente encendida fuera de horario',off:'💻 ¡PC apagada!',tip:'Las PCs de gerencia se dejan encendidas con frecuencia'},
+        {emoji:'💡',type:'light',x:1.2,y:.2,pts:10,on:'💡 Lámpara de escritorio encendida sin nadie',off:'💡 ¡Lámpara apagada!',tip:'Las oficinas privadas desperdician más luz'},
+        {emoji:'🔌',type:'energy',x:1.8,y:2.5,pts:8,on:'🔌 Regleta con equipos en standby',off:'🔌 ¡Regleta desconectada!',tip:'Apagar regletas ahorra energía fantasma'},
+        {emoji:'❄️',type:'energy',x:.3,y:1.5,pts:12,on:'❄️ AC de oficina privada encendido sin nadie',off:'❄️ ¡AC apagado!',tip:'El AC individual es el mayor gasto en oficinas'},
+      ]
+    },
+    {
+      id:'servidor',name:'Cuarto de Servidores',floor:'fl-office',
+      x:8,y:3,w:3,h:4,
+      ambient:'rgba(100,160,255,.14)',
+      furniture:[
+        {t:'f-shelf',x:.3,y:.4,e:'🖥️',es:12},{t:'f-shelf',x:.3,y:1,e:'🖥️',es:12},
+        {t:'f-shelf',x:.3,y:1.6,e:'🖥️',es:12},
+        {t:'f-shelf',x:2,y:.4,e:'🖥️',es:12},{t:'f-shelf',x:2,y:1,e:'🖥️',es:12},
+        {t:'f-shelf',x:2,y:1.6,e:'🖥️',es:12},
+        {t:'ceil',x:.8,y:.8},{t:'ceil',x:2,y:.8},{t:'ceil',x:1.4,y:2.5},
+      ],
+      items:[
+        {emoji:'💡',type:'light',x:1.5,y:.2,pts:10,on:'💡 Luces del datacenter encendidas sin mantenimiento',off:'💡 ¡Luces apagadas!',tip:'Los cuartos de servidores no necesitan luz 24/7'},
+        {emoji:'🖥️',type:'energy',x:2.2,y:1.8,pts:15,on:'🖥️ Servidor obsoleto encendido sin función',off:'🖥️ ¡Servidor decomisionado!',tip:'Los servidores obsoletos consumen energía sin aportar'},
+        {emoji:'❄️',type:'energy',x:1,y:2.8,pts:12,on:'❄️ Enfriamiento del datacenter a temperatura excesiva',off:'❄️ ¡Temperatura optimizada!',tip:'Optimizar la temperatura del datacenter ahorra 20%'},
+      ]
+    }
+  ],
+  walls:[
+    {a:'h',x:0,y:3,l:11,doors:[{at:1,sz:.8},{at:3.5,sz:.8},{at:6.2,sz:.8},{at:9,sz:.8}]},
+    {a:'v',x:3.5,y:0,l:3,doors:[{at:1,sz:.9}]},
+    {a:'v',x:7.5,y:0,l:3,doors:[{at:1.2,sz:.8}]},
+    {a:'v',x:2.5,y:3,l:4,doors:[{at:1.5,sz:.8}]},
+    {a:'v',x:5.5,y:3,l:4,doors:[{at:1.5,sz:.8}]},
+    {a:'v',x:8,y:3,l:4,doors:[{at:1.2,sz:.8}]},
+  ]
+}
+
+};// end ENVS
+
+// ═══════════════
+//  TRANSITIONS between environments
+// ═══════════════
+const TRANSITIONS=[
+  {at:3, env:'office', emoji:'🏢🌍', title:'¡Nuevo Entorno: La Oficina!',
+   sub:'Nivel 3 — El desperdicio también ocurre en el trabajo',
+   desc:'Ahora debes recorrer una oficina completa: recepción, cubículos, sala de juntas, cafetín, gerencia y hasta el cuarto de servidores.',
+   tip:'🌱 Las oficinas gastan hasta 50% más energía que los hogares por metro cuadrado'},
+];
+
+// ═══════════════
+//  GAME STATE
+// ═══════════════
+const G={level:1,score:0,total:0,time:120,items:[],px:0,py:0,nearby:null,running:false,_t:null,mi:null,scale:1,ox:0,oy:0,envKey:'house'};
+const $=id=>document.getElementById(id);
+const house=$('house');
+
+function curEnv(){return ENVS[G.envKey]}
+
+function getEnvForLevel(lv){
+  if(lv>=3) return 'office';
+  return 'house';
+}
+
+function calcScale(){
+  const env=curEnv();
+  const vw=window.innerWidth,vh=window.innerHeight-44;
+  const hw=env.W*U,hh=env.H*U;
+  const s=Math.min(vw/(hw+30),vh/(hh+30));
+  G.scale=s;G.ox=(vw-hw*s)/2;G.oy=(vh-hh*s)/2+44;
+  house.style.cssText=`left:${G.ox}px;top:${G.oy}px;width:${hw*s}px;height:${hh*s}px`;
+}
+function u(v){return v*U*G.scale}
+
+function buildExterior(){
+  const env=curEnv();
+  const ext=$('exterior');
+  ext.innerHTML='';
+  ext.style.background=env.exteriorBg;
+
+  // path
+  if(env.path){
+    const pathX=G.ox+u(env.path.rx);
+    const pathY=G.oy+u(env.H);
+    const ph=window.innerHeight-pathY;
+    if(ph>0){
+      const p=document.createElement('div');
+      p.className='ext-path';
+      const bg=G.envKey==='office'
+        ?'linear-gradient(90deg,rgba(100,100,100,.2),rgba(120,120,120,.15),rgba(100,100,100,.2))'
+        :'repeating-linear-gradient(0deg,rgba(160,140,110,.2) 0px,rgba(160,140,110,.2) 14px,rgba(140,120,90,.15) 14px,rgba(140,120,90,.15) 16px)';
+      p.style.cssText=`left:${pathX}px;top:${pathY-2}px;width:${u(env.path.rw)}px;height:${ph+4}px;background:${bg}`;
+      ext.appendChild(p);
+    }
+  }
+
+  // exterior items
+  (env.exteriorItems||[]).forEach(t=>{
+    const sh=document.createElement('div');
+    sh.className='ext-shadow';
+    sh.style.cssText=`left:${G.ox+u(t.x)+4}px;top:${G.oy+u(t.y)+t.s*.6}px;width:${t.s*1.2}px;height:${t.s*.5}px`;
+    ext.appendChild(sh);
+    const el=document.createElement('div');
+    el.className='ext-tree';el.textContent=t.e;
+    el.style.cssText=`left:${G.ox+u(t.x)}px;top:${G.oy+u(t.y)}px;font-size:${t.s}px`;
+    ext.appendChild(el);
+  });
+
+  // foundation shadow + base
+  const hs=document.createElement('div');
+  hs.style.cssText=`position:absolute;left:${G.ox-6}px;top:${G.oy-3}px;width:${u(curEnv().W)+12}px;height:${u(curEnv().H)+12}px;background:rgba(0,0,0,.4);border-radius:4px;filter:blur(14px);z-index:0`;
+  ext.appendChild(hs);
+  const hb=document.createElement('div');
+  const fc=env.foundationColor||'#2a2a2a';
+  hb.style.cssText=`position:absolute;left:${G.ox-3}px;top:${G.oy-3}px;width:${u(env.W)+6}px;height:${u(env.H)+6}px;background:${fc};border-radius:3px;z-index:1;border:1px solid rgba(255,255,255,.03)`;
+  ext.appendChild(hb);
+}
+
+function buildHouse(){
+  const env=curEnv();
+  const isOffice=env.theme==='office';
+  house.innerHTML='';
+  calcScale();
+  const s=G.scale;
+  buildExterior();
+
+  // add parking lot lines for office
+  if(isOffice){
+    const parkY=G.oy+u(env.H)+10;
+    const parkH=window.innerHeight-parkY;
+    if(parkH>10){
+      const pk=document.createElement('div');
+      pk.style.cssText=`position:absolute;left:${G.ox}px;top:${parkY-5}px;width:${u(env.W)}px;height:${parkH+5}px;background:repeating-linear-gradient(90deg,transparent 0px,transparent 58px,rgba(255,255,100,.1) 58px,rgba(255,255,100,.1) 60px);z-index:1;pointer-events:none`;
+      $('exterior').appendChild(pk);
+    }
+    // sidewalks on sides
+    const swL=document.createElement('div');
+    swL.style.cssText=`position:absolute;left:${G.ox-14}px;top:${G.oy-3}px;width:14px;height:${u(env.H)+6}px;background:linear-gradient(90deg,rgba(120,120,120,.12),rgba(140,140,140,.08));z-index:1;pointer-events:none`;
+    $('exterior').appendChild(swL);
+    const swR=document.createElement('div');
+    swR.style.cssText=`position:absolute;left:${G.ox+u(env.W)+3}px;top:${G.oy-3}px;width:14px;height:${u(env.H)+6}px;background:linear-gradient(270deg,rgba(120,120,120,.12),rgba(140,140,140,.08));z-index:1;pointer-events:none`;
+    $('exterior').appendChild(swR);
+  }
+
+  env.rooms.forEach(rm=>{
+    const d=document.createElement('div');
+    d.className='room'+(isOffice?' theme-office':'');
+    d.id='room-'+rm.id;
+    d.style.cssText=`left:${u(rm.x)}px;top:${u(rm.y)}px;width:${u(rm.w)}px;height:${u(rm.h)}px;background:${isOffice?'#222230':'#1c1c1c'}`;
+
+    const fl=document.createElement('div');
+    fl.className='room-floor '+rm.floor;
+    fl.style.cssText='position:absolute;top:10px;left:10px;right:10px;bottom:10px';
+    d.appendChild(fl);
+
+    // office ceiling grid overlay
+    if(isOffice){
+      const cg=document.createElement('div');
+      cg.className='fl-office-drop';
+      d.appendChild(cg);
+    }
+
+    const gl=document.createElement('div');
+    gl.className='room-glow';
+    gl.style.background=`radial-gradient(ellipse at 50% 40%,${rm.ambient},transparent 75%)`;
+    d.appendChild(gl);
+
+    const lb=document.createElement('div');lb.className='room-label';lb.textContent=rm.name;
+    d.appendChild(lb);
+
+    ['wo-t','wo-b','wo-l','wo-r'].forEach(w=>{const e=document.createElement('div');e.className=w;d.appendChild(e)});
+    ['baseboard-t','baseboard-b','baseboard-l','baseboard-r'].forEach(w=>{const e=document.createElement('div');e.className=w;d.appendChild(e)});
+
+    rm.furniture.forEach(f=>{
+      if(f.t==='f-rug'){
+        const r=document.createElement('div');r.className='f-rug';
+        r.style.cssText=`left:${u(f.x)}px;top:${u(f.y)}px`;
+        const ri=document.createElement('div');ri.className='f-rug-in';
+        ri.style.cssText=`width:${f.rw*s}px;height:${f.rh*s}px;background:radial-gradient(ellipse,${f.c},${f.c}dd 60%,${f.c}88)`;
+        r.appendChild(ri);d.appendChild(r);
+      } else if(f.t==='win'){
+        const w=document.createElement('div');w.className='win-ext';
+        w.style.cssText=`left:${u(f.x)}px;top:${u(f.y)}px;width:${f.fw*s}px;height:${f.fh*s}px`;
+        const g=document.createElement('div');g.className='win-glass';w.appendChild(g);
+        const fh=document.createElement('div');fh.className='win-frame win-frame-h';w.appendChild(fh);
+        const fv=document.createElement('div');fv.className='win-frame win-frame-v';w.appendChild(fv);
+        d.appendChild(w);
+      } else if(f.t==='f-mirror'){
+        const m=document.createElement('div');m.className='f-mirror';
+        m.style.cssText=`left:${u(f.x)}px;top:${u(f.y)}px;width:${f.fw*s}px;height:${f.fh*s}px`;
+        d.appendChild(m);
+      } else if(f.t==='ceil'){
+        const c=document.createElement('div');c.className='ceil-light';
+        c.style.cssText=`left:${u(f.x)-9}px;top:${u(f.y)-9}px`;
+        const cb=document.createElement('div');cb.className='ceil-light-body';c.appendChild(cb);
+        d.appendChild(c);
+      } else {
+        const fe=document.createElement('div');fe.className='fur '+f.t;
+        fe.style.cssText=`left:${u(f.x)}px;top:${u(f.y)}px`;
+        const body=document.createElement('div');body.className='fur-b';
+        body.style.transform=`scale(${s})`;body.style.transformOrigin='top left';
+        if(f.cw) body.style.width=f.cw;
+        if(f.e){const em=document.createElement('span');em.className='fur-e';em.textContent=f.e;em.style.fontSize=(f.es||16)+'px';body.appendChild(em)}
+        const sh=document.createElement('div');sh.className='fur-shadow';body.appendChild(sh);
+        fe.appendChild(body);d.appendChild(fe);
+      }
+    });
+    house.appendChild(d);
+  });
+
+  env.walls.forEach(w=>{
+    if(w.a==='h'){
+      let pos=0;
+      const sorted=[...w.doors].sort((a,b)=>a.at-b.at);
+      sorted.forEach(door=>{
+        if(door.at>pos) mkWall('h',u(w.x+pos),u(w.y)-4,u(door.at-pos),isOffice);
+        mkDoor('h',u(w.x+door.at),u(w.y)-4,u(door.sz),isOffice);
+        pos=door.at+door.sz;
+      });
+      if(pos<w.l) mkWall('h',u(w.x+pos),u(w.y)-4,u(w.l-pos),isOffice);
+    } else {
+      let pos=0;
+      const sorted=[...w.doors].sort((a,b)=>a.at-b.at);
+      sorted.forEach(door=>{
+        if(door.at>pos) mkWall('v',u(w.x)-4,u(w.y+pos),u(door.at-pos),isOffice);
+        mkDoor('v',u(w.x)-4,u(w.y+door.at),u(door.sz),isOffice);
+        pos=door.at+door.sz;
+      });
+      if(pos<w.l) mkWall('v',u(w.x)-4,u(w.y+pos),u(w.l-pos),isOffice);
+    }
+  });
+}
+
+function mkWall(axis,x,y,len,office){
+  const w=document.createElement('div');
+  w.className=(axis==='h'?'wi-h':'wi-v')+(office?' theme-office':'');
+  w.style.left=x+'px';w.style.top=y+'px';
+  if(axis==='h')w.style.width=len+'px';else w.style.height=len+'px';
+  house.appendChild(w);
+}
+
+function mkDoor(axis,x,y,len,office){
+  const d=document.createElement('div');
+  d.className=(axis==='h'?'door-h':'door-v')+(office?' theme-office':'');
+  d.style.left=x+'px';d.style.top=y+'px';
+  if(axis==='h'){d.style.width=len+'px';d.style.height='8px'}
+  else{d.style.width='8px';d.style.height=len+'px'}
+  const inner=document.createElement('div');
+  inner.className=axis==='h'?'door-h-inner':'door-v-inner';
+  d.appendChild(inner);
+  const knob=document.createElement('div');knob.className='door-knob';
+  if(axis==='h'){knob.style.left=(len/2-2)+'px';knob.style.top='2px'}
+  else{knob.style.top=(len/2-2)+'px';knob.style.left='2px'}
+  d.appendChild(knob);
+  house.appendChild(d);
+}
+
+function placeItems(){
+  const env=curEnv();
+  document.querySelectorAll('.ii,.dr').forEach(e=>e.remove());
+  G.items=[];
+  const maxItems=env.rooms.reduce((s,r)=>s+r.items.length,0);
+  const count=Math.min(5+G.level*2,maxItems);
+  const all=[];
+  env.rooms.forEach(rm=>{
+    rm.items.forEach(it=>{
+      all.push({...it,absX:G.ox+u(rm.x+it.x),absY:G.oy+u(rm.y+it.y),room:rm.id});
+    });
+  });
+  const picked=all.sort(()=>Math.random()-.5).slice(0,count);
+  picked.forEach((it,i)=>{
+    const item={id:i,...it,active:true};
+    G.items.push(item);
+    const d=document.createElement('div');
+    d.className='ii wa';d.id='i'+i;
+    d.innerHTML=`<span>${it.emoji}</span><div class="ii-gl"></div>`;
+    d.style.left=it.absX+'px';d.style.top=it.absY+'px';
+    d.onclick=()=>interact(i);
+    $('gc').appendChild(d);
+    if(it.type==='water') startDrip(item);
+  });
+  updateHUD();
+}
+
+function startDrip(item){
+  const iv=setInterval(()=>{
+    if(!item.active||!G.running){clearInterval(iv);return}
+    const d=document.createElement('div');d.className='dr';d.textContent='💧';
+    d.style.left=(item.absX+6)+'px';d.style.top=(item.absY+20)+'px';
+    $('gc').appendChild(d);setTimeout(()=>d.remove(),800);
+  },600);
+}
+
+function setPlayer(){
+  const r=curEnv().rooms[0];
+  G.px=G.ox+u(r.x+r.w/2)-14;G.py=G.oy+u(r.y+r.h/2)-14;
+  renderPlayer();
+}
+function renderPlayer(){
+  $('pl').style.left=G.px+'px';$('pl').style.top=G.py+'px';
+  $('ps').style.left=(G.px+4)+'px';$('ps').style.top=(G.py+30)+'px';
+  checkNearby();
+}
+function mv(dir){
+  if(!G.running)return;
+  const env=curEnv();
+  const sp=3.5*G.scale*3;
+  const mnX=G.ox+12,mxX=G.ox+u(env.W)-28;
+  const mnY=G.oy+12,mxY=G.oy+u(env.H)-28;
+  if(dir==='up')G.py=Math.max(mnY,G.py-sp);
+  if(dir==='down')G.py=Math.min(mxY,G.py+sp);
+  if(dir==='left')G.px=Math.max(mnX,G.px-sp);
+  if(dir==='right')G.px=Math.min(mxX,G.px+sp);
+  renderPlayer();
+}
+function checkNearby(){
+  const cx=G.px+14,cy=G.py+14;
+  let best=null,bd=50*G.scale;
+  G.items.forEach(it=>{
+    if(!it.active)return;
+    const d=Math.hypot(cx-it.absX-11,cy-it.absY-11);
+    if(d<bd){bd=d;best=it}
+  });
+  G.nearby=best;
+  $('ab').classList.toggle('nr',!!best);
+  if(best){
+    $('px').style.display='block';
+    $('px').style.left=(best.absX+11)+'px';
+    $('px').style.top=(best.absY+11)+'px';
+    showMsg(best.on);
+  } else $('px').style.display='none';
+}
+
+function interact(id){
+  const item=G.items[id];
+  if(!item||!item.active)return;
+  const d=Math.hypot(G.px+14-item.absX-11,G.py+14-item.absY-11);
+  if(d>60*G.scale){showMsg('🚶 ¡Acércate más!');return}
+  item.active=false;
+  const pts=item.pts*G.level;G.score+=pts;G.total+=pts;
+  const ie=document.getElementById('i'+id);
+  ie.classList.remove('wa');ie.classList.add('sa');
+  spawnFloat(item.absX,item.absY-5,`+${pts} ⭐`,'#ffd700');
+  spawnFloat(item.absX+18,item.absY-5,item.type==='water'?'💧✅':'⚡✅','#51cf66');
+  showMsg(item.off);updateHUD();
+  if(G.items.every(i=>!i.active))endLevel(true);
+}
+function doAction(){if(G.nearby)interact(G.nearby.id)}
+function spawnFloat(x,y,t,c){
+  const e=document.createElement('div');e.className='ft';e.textContent=t;
+  e.style.cssText=`left:${x}px;top:${y}px;color:${c}`;
+  $('gc').appendChild(e);setTimeout(()=>e.remove(),1000);
+}
+function updateHUD(){
+  const env=curEnv();
+  $('sd').textContent=G.total;
+  $('ld').textContent=`${env.icon} Nivel ${G.level}`;
+  const sv=G.items.filter(i=>!i.active).length;
+  $('tkd').textContent=`${sv}/${G.items.length}`;
+  $('pf').style.width=(G.items.length?sv/G.items.length*100:0)+'%';
+}
+function showMsg(t){
+  const m=$('mb');m.textContent=t;m.classList.add('vi');
+  clearTimeout(m._t);m._t=setTimeout(()=>m.classList.remove('vi'),2200);
+}
+function fmtTime(s){return`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`}
+
+// ═══════════════
+//  GAME FLOW
+// ═══════════════
+function startGame(){$('ss').style.display='none';initLevel()}
+
+function dismissTransition(){$('ts').style.display='none';initLevel()}
+
+function initLevel(){
+  const newEnv=getEnvForLevel(G.level);
+  const oldEnv=G.envKey;
+  G.envKey=newEnv;
+
+  // check for transition screen
+  if(newEnv!==oldEnv){
+    const tr=TRANSITIONS.find(t=>t.env===newEnv);
+    if(tr && G.level===tr.at){
+      $('t-emoji').textContent=tr.emoji;
+      $('t-title').textContent=tr.title;
+      $('t-sub').textContent=tr.sub;
+      $('t-desc').textContent=tr.desc;
+      $('t-tip').textContent=tr.tip;
+      $('ts').style.display='flex';
+      return;
+    }
+  }
+
+  G.time=Math.max(60,120-(G.level-1)*8);G.score=0;
+  buildHouse();placeItems();setPlayer();
+  G.running=true;$('td').style.color='#ff6b6b';
+  $('td').textContent=fmtTime(G.time);
+  const env=curEnv();
+  showMsg(`${env.icon} Nivel ${G.level} — ¡${G.items.length} desperdicios!`);
+  clearInterval(G._t);
+  G._t=setInterval(()=>{
+    if(!G.running)return;G.time--;
+    $('td').textContent=fmtTime(G.time);
+    if(G.time<=10)$('td').style.color='#ff0000';
+    if(G.time<=0)endLevel(false);
+  },1000);
+}
+
+function endLevel(won){
+  G.running=false;clearInterval(G._t);
+  const sv=G.items.filter(i=>!i.active).length;
+  const pct=G.items.length?sv/G.items.length:0;
+  const stars=pct>=1?'⭐⭐⭐':pct>=.7?'⭐⭐':pct>=.4?'⭐':'💔';
+  $('ee').textContent=won?'🎉🌍':'⏰';
+  $('etl').textContent=won?`¡Nivel ${G.level} completado!`:'¡Se acabó el tiempo!';
+  $('est').textContent=stars;
+  $('esc').textContent=`Puntuación: ${G.total} ⭐`;
+  $('etk').textContent=`Tareas: ${sv}/${G.items.length}`;
+  const tips=G.items.map(i=>i.tip).filter(Boolean);
+  $('etp').textContent='🌱 '+(tips[Math.floor(Math.random()*tips.length)]||'Cada acción cuenta');
+  const nextEnv=getEnvForLevel(G.level+1);
+  const nextLabel=nextEnv!==G.envKey?` (${ENVS[nextEnv].icon} ${ENVS[nextEnv].name})`:'';
+  $('en').textContent=won?`▶️ Siguiente Nivel${nextLabel}`:'🔄 Reintentar';
+  $('es').style.display='flex';
+}
+
+function nextLevel(){if(G.items.every(i=>!i.active))G.level++;$('es').style.display='none';initLevel()}
+function restartGame(){G.level=1;G.total=0;G.envKey='house';$('es').style.display='none';initLevel()}
+
+// ═══════════════
+//  INPUT
+// ═══════════════
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.key]=true;if(e.key===' '||e.key==='Enter'){e.preventDefault();doAction()}});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+(function loop(){
+  if(G.running){
+    if(keys.ArrowUp||keys.w||keys.W)mv('up');
+    if(keys.ArrowDown||keys.s||keys.S)mv('down');
+    if(keys.ArrowLeft||keys.a||keys.A)mv('left');
+    if(keys.ArrowRight||keys.d||keys.D)mv('right');
+  }
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('.db').forEach(b=>{
+  const d=b.dataset.d;
+  const go=e=>{e.preventDefault();mv(d);clearInterval(G.mi);G.mi=setInterval(()=>mv(d),40)};
+  const stop=e=>{e.preventDefault();clearInterval(G.mi)};
+  b.addEventListener('touchstart',go,{passive:false});
+  b.addEventListener('touchend',stop,{passive:false});
+  b.addEventListener('mousedown',go);b.addEventListener('mouseup',stop);b.addEventListener('mouseleave',stop);
+});
+$('ab').addEventListener('click',doAction);
+$('ab').addEventListener('touchstart',e=>{e.preventDefault();doAction()},{passive:false});
+window.addEventListener('resize',()=>{if(G.running){buildHouse();placeItems();renderPlayer()}});
+</script>
+</body>
+</html>
