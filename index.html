@@ -272,6 +272,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <div class="st">🏠 <span id="ld">Nivel 1</span></div>
     <div class="st">⏱️ <span id="td">2:00</span></div>
     <div class="st">✅ <span id="tkd">0/0</span></div>
+    <div class="st" id="mute-btn" style="cursor:pointer" onclick="toggleMute()">🔊</div>
   </div>
   <div id="pw"><div id="pf"></div></div>
   <div id="exterior"></div>
@@ -309,13 +310,23 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <button class="bg" onclick="dismissTransition()">▶️ ¡Vamos!</button>
   </div>
 
-  <div class="ov" id="es" style="display:none">
+  <div class="ov" id="es" style="display:none;overflow-y:auto">
     <div class="big" id="ee">🌍</div>
     <h1 id="etl"></h1>
     <div class="sr" id="est"></div>
     <p id="esc"></p>
     <p id="etk"></p>
-    <div class="et" id="etp"></div>
+    <div style="display:flex;gap:10px;margin:8px 0">
+      <div style="background:rgba(81,207,102,.12);border:1px solid rgba(81,207,102,.25);border-radius:10px;padding:6px 14px;text-align:center">
+        <div style="font-size:18px" id="el-water">0</div>
+        <div style="font-size:9px;color:#74c0fc">💧 acciones de agua</div>
+      </div>
+      <div style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.2);border-radius:10px;padding:6px 14px;text-align:center">
+        <div style="font-size:18px" id="el-energy">0</div>
+        <div style="font-size:9px;color:#ffd700">⚡ acciones de energía</div>
+      </div>
+    </div>
+    <div style="text-align:left;max-width:320px;font-size:11px;color:#bbb;line-height:1.6" id="el-tips"></div>
     <button class="bg" id="en" onclick="nextLevel()">▶️ Siguiente</button>
     <button class="bs" onclick="restartGame()">🔄 Reiniciar</button>
   </div>
@@ -377,6 +388,171 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 
 <script>
 const U=70;
+
+// ═══════════════════════════════════════
+//  AUDIO ENGINE (synthesized, no external files)
+// ═══════════════════════════════════════
+const Audio_={
+  ctx:null, muted:false,
+  master:null, musicGain:null, sfxGain:null,
+  musicTimer:null, musicEnv:null,
+
+  init(){
+    if(this.ctx) return;
+    this.ctx=new (window.AudioContext||window.webkitAudioContext)();
+    this.master=this.ctx.createGain();
+    this.master.gain.value=1;
+    this.master.connect(this.ctx.destination);
+    this.musicGain=this.ctx.createGain();
+    this.musicGain.gain.value=.16;
+    this.musicGain.connect(this.master);
+    this.sfxGain=this.ctx.createGain();
+    this.sfxGain.gain.value=.35;
+    this.sfxGain.connect(this.master);
+  },
+
+  toggleMute(){
+    this.init();
+    this.muted=!this.muted;
+    this.master.gain.setTargetAtTime(this.muted?0:1,this.ctx.currentTime,.05);
+    return this.muted;
+  },
+
+  tone(freq,dur,type,vol,delay,destGain){
+    const ctx=this.ctx;
+    const t0=ctx.currentTime+(delay||0);
+    const osc=ctx.createOscillator();
+    const g=ctx.createGain();
+    osc.type=type||'sine';
+    osc.frequency.setValueAtTime(freq,t0);
+    g.gain.setValueAtTime(0,t0);
+    g.gain.linearRampToValueAtTime(vol,t0+.012);
+    g.gain.exponentialRampToValueAtTime(.001,t0+dur);
+    osc.connect(g);g.connect(destGain||this.sfxGain);
+    osc.start(t0);osc.stop(t0+dur+.02);
+    return osc;
+  },
+
+  sweep(f1,f2,dur,type,vol,delay,destGain){
+    const ctx=this.ctx;
+    const t0=ctx.currentTime+(delay||0);
+    const osc=ctx.createOscillator();
+    const g=ctx.createGain();
+    osc.type=type||'sine';
+    osc.frequency.setValueAtTime(f1,t0);
+    osc.frequency.exponentialRampToValueAtTime(f2,t0+dur);
+    g.gain.setValueAtTime(0,t0);
+    g.gain.linearRampToValueAtTime(vol,t0+.01);
+    g.gain.exponentialRampToValueAtTime(.001,t0+dur);
+    osc.connect(g);g.connect(destGain||this.sfxGain);
+    osc.start(t0);osc.stop(t0+dur+.02);
+  },
+
+  noiseBurst(dur,vol,delay,filterFreq){
+    const ctx=this.ctx;
+    const t0=ctx.currentTime+(delay||0);
+    const bufSize=ctx.sampleRate*dur;
+    const buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) data[i]=(Math.random()*2-1)*(1-i/bufSize);
+    const src=ctx.createBufferSource();src.buffer=buf;
+    const filt=ctx.createBiquadFilter();
+    filt.type='bandpass';filt.frequency.value=filterFreq||1800;filt.Q.value=.8;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.001,t0+dur);
+    src.connect(filt);filt.connect(g);g.connect(this.sfxGain);
+    src.start(t0);
+  },
+
+  sfx(kind){
+    if(!this.ctx) return;
+    const t=this;
+    if(kind==='light'){
+      t.tone(1100,.12,'sine',.3,0);
+      t.tone(1500,.1,'sine',.18,.05);
+    } else if(kind==='water'){
+      t.noiseBurst(.25,.25,0,2200);
+      t.sweep(900,300,.2,'sine',.12,.02);
+    } else if(kind==='energy'){
+      t.sweep(500,80,.18,'sawtooth',.18,0);
+      t.tone(150,.08,'square',.08,.1);
+    } else if(kind==='success'){
+      [523,659,784,1047].forEach((f,i)=>t.tone(f,.35,'triangle',.22,i*.09));
+    } else if(kind==='timeout'){
+      t.sweep(400,120,.6,'sawtooth',.18,0);
+    } else if(kind==='final'){
+      [523,659,784,1047,1319].forEach((f,i)=>t.tone(f,.5,'triangle',.2,i*.11));
+    } else if(kind==='deny'){
+      t.tone(180,.12,'square',.15,0);
+    } else if(kind==='click'){
+      t.tone(700,.05,'sine',.12,0);
+    }
+  },
+
+  // ── AMBIENT MUSIC ──
+  startMusic(env){
+    this.stopMusic();
+    if(!this.ctx) return;
+    this.musicEnv=env;
+    const ctx=this.ctx;
+
+    // soft pad (two detuned oscillators through a filter, slow LFO)
+    const padFreqs=env==='office'?[110,164.81,220]:[130.81,164.81,196];
+    const pad=ctx.createGain();pad.gain.value=0;pad.connect(this.musicGain);
+    pad.gain.linearRampToValueAtTime(1,ctx.currentTime+2);
+    const filt=ctx.createBiquadFilter();
+    filt.type='lowpass';filt.frequency.value=env==='office'?900:1400;
+    filt.connect(pad);
+    const oscs=padFreqs.map((f,i)=>{
+      const o=ctx.createOscillator();
+      o.type=i===1?'triangle':'sine';
+      o.frequency.value=f;
+      const og=ctx.createGain();og.gain.value=.5;
+      o.connect(og);og.connect(filt);
+      o.start();
+      return o;
+    });
+    // slow LFO on filter cutoff for movement
+    const lfo=ctx.createOscillator();lfo.frequency.value=env==='office'?.07:.05;
+    const lfoGain=ctx.createGain();lfoGain.gain.value=env==='office'?150:250;
+    lfo.connect(lfoGain);lfoGain.connect(filt.frequency);lfo.start();
+
+    this._padNodes={pad,filt,oscs,lfo};
+
+    // sparse melodic plucks scheduled in a loop
+    const scale=env==='office'
+      ?[440,493.88,523.25,587.33,659.25,698.46]
+      :[523.25,587.33,659.25,783.99,880];
+    const tick=()=>{
+      if(this.musicEnv!==env) return;
+      if(Math.random()<(env==='office'?.55:.7)){
+        const f=scale[Math.floor(Math.random()*scale.length)]/(Math.random()<.3?2:1);
+        this.tone(f,1.2,'sine',.06,0,this.musicGain);
+      }
+      this.musicTimer=setTimeout(tick,env==='office'?1400:1100);
+    };
+    tick();
+  },
+
+  stopMusic(){
+    this.musicEnv=null;
+    if(this.musicTimer){clearTimeout(this.musicTimer);this.musicTimer=null}
+    if(this._padNodes){
+      const {pad,oscs,lfo}=this._padNodes;
+      const ctx=this.ctx;
+      try{
+        pad.gain.linearRampToValueAtTime(0,ctx.currentTime+.5);
+        setTimeout(()=>{oscs.forEach(o=>{try{o.stop()}catch(e){}});try{lfo.stop()}catch(e){}},600);
+      }catch(e){}
+      this._padNodes=null;
+    }
+  }
+};
+
+function toggleMute(){
+  const m=Audio_.toggleMute();
+  document.getElementById('mute-btn').textContent=m?'🔇':'🔊';
+}
 
 // ═══════════════════════════════════════
 //  ENVIRONMENTS
@@ -995,7 +1171,7 @@ function interact(id){
   const item=G.items[id];
   if(!item||!item.active)return;
   const d=Math.hypot(G.px+14-item.absX-11,G.py+14-item.absY-11);
-  if(d>60*G.scale){showMsg('🚶 ¡Acércate más!');return}
+  if(d>60*G.scale){showMsg('🚶 ¡Acércate más!');Audio_.sfx('deny');return}
   item.active=false;
   const pts=item.pts*G.level;G.score+=pts;G.total+=pts;
   const ie=document.getElementById('i'+id);
@@ -1003,6 +1179,7 @@ function interact(id){
   spawnFloat(item.absX,item.absY-5,`+${pts} ⭐`,'#ffd700');
   spawnFloat(item.absX+18,item.absY-5,item.type==='water'?'💧✅':'⚡✅','#51cf66');
   showMsg(item.off);updateHUD();
+  Audio_.sfx(item.type==='water'?'water':item.type==='light'?'light':'energy');
   if(G.items.every(i=>!i.active))endLevel(true);
 }
 function doAction(){if(G.nearby)interact(G.nearby.id)}
@@ -1028,9 +1205,17 @@ function fmtTime(s){return`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0
 // ═══════════════
 //  GAME FLOW
 // ═══════════════
-function startGame(){$('ss').style.display='none';initLevel()}
+function startGame(){
+  Audio_.init();
+  $('ss').style.display='none';
+  initLevel();
+}
 
-function dismissTransition(){$('ts').style.display='none';initLevel()}
+function dismissTransition(){
+  Audio_.sfx('click');
+  $('ts').style.display='none';
+  initLevel();
+}
 
 function initLevel(){
   const newEnv=getEnvForLevel(G.level);
@@ -1047,6 +1232,7 @@ function initLevel(){
       $('t-desc').textContent=tr.desc;
       $('t-tip').textContent=tr.tip;
       $('ts').style.display='flex';
+      Audio_.stopMusic();
       return;
     }
   }
@@ -1057,6 +1243,7 @@ function initLevel(){
   $('td').textContent=fmtTime(G.time);
   const env=curEnv();
   showMsg(`${env.icon} Nivel ${G.level} — ¡${G.items.length} desperdicios!`);
+  if(Audio_.ctx && Audio_.musicEnv!==G.envKey) Audio_.startMusic(G.envKey);
   clearInterval(G._t);
   G._t=setInterval(()=>{
     if(!G.running)return;G.time--;
@@ -1068,13 +1255,20 @@ function initLevel(){
 
 function endLevel(won){
   G.running=false;clearInterval(G._t);
+  Audio_.stopMusic();
   const sv=G.items.filter(i=>!i.active).length;
   const pct=G.items.length?sv/G.items.length:0;
   const stars=pct>=1?'⭐⭐⭐':pct>=.7?'⭐⭐':pct>=.4?'⭐':'💔';
 
+  // this-level breakdown
+  const levelWater=G.items.filter(i=>!i.active&&i.type==='water').length;
+  const levelEnergy=G.items.filter(i=>!i.active&&i.type!=='water').length;
+
   // track items saved by type across levels
-  G.waterSaved=(G.waterSaved||0)+G.items.filter(i=>!i.active&&i.type==='water').length;
-  G.energySaved=(G.energySaved||0)+G.items.filter(i=>!i.active&&i.type!=='water').length;
+  G.waterSaved=(G.waterSaved||0)+levelWater;
+  G.energySaved=(G.energySaved||0)+levelEnergy;
+
+  Audio_.sfx(won?'success':'timeout');
 
   // if won level 2 → show final reflection
   if(won && G.level===2){
@@ -1087,8 +1281,14 @@ function endLevel(won){
   $('est').textContent=stars;
   $('esc').textContent=`Puntuación: ${G.total} ⭐`;
   $('etk').textContent=`Tareas: ${sv}/${G.items.length}`;
-  const tips=G.items.map(i=>i.tip).filter(Boolean);
-  $('etp').textContent='🌱 '+(tips[Math.floor(Math.random()*tips.length)]||'Cada acción cuenta');
+  $('el-water').textContent=levelWater;
+  $('el-energy').textContent=levelEnergy;
+
+  // up to 4 unique tips from items actually saved this level
+  const savedTips=[...new Set(G.items.filter(i=>!i.active).map(i=>i.tip).filter(Boolean))].slice(0,4);
+  $('el-tips').innerHTML=savedTips.length
+    ? '<b style="color:#51cf66">🌱 Lo que acabas de ahorrar:</b><br>'+savedTips.map(t=>'• '+t).join('<br>')
+    : '';
 
   if(won && G.level===1){
     $('en').textContent='▶️ Siguiente: 🏢 La Oficina';
@@ -1099,6 +1299,7 @@ function endLevel(won){
 }
 
 function showFinalScreen(){
+  Audio_.sfx('final');
   $('f-score').textContent=`Puntuación final: ${G.total} ⭐`;
   $('f-water').textContent=G.waterSaved||0;
   $('f-energy').textContent=G.energySaved||0;
@@ -1106,6 +1307,7 @@ function showFinalScreen(){
 }
 
 function shareGame(){
+  Audio_.sfx('click');
   const url='https://amdavil.github.io/eco-guardian-game/';
   const text='🌍 ¡Jugué EcoGuardián y aprendí a ahorrar agua y energía! ¿Puedes superar mi puntaje de '+G.total+' ⭐? Juega aquí: ';
   if(navigator.share){
@@ -1115,8 +1317,19 @@ function shareGame(){
   }
 }
 
-function nextLevel(){if(G.items.every(i=>!i.active))G.level++;$('es').style.display='none';initLevel()}
-function restartGame(){G.level=1;G.total=0;G.waterSaved=0;G.energySaved=0;G.envKey='house';$('es').style.display='none';$('fs').style.display='none';initLevel()}
+function nextLevel(){
+  Audio_.sfx('click');
+  if(G.items.every(i=>!i.active))G.level++;
+  $('es').style.display='none';
+  initLevel();
+}
+function restartGame(){
+  Audio_.sfx('click');
+  Audio_.stopMusic();
+  G.level=1;G.total=0;G.waterSaved=0;G.energySaved=0;G.envKey='house';
+  $('es').style.display='none';$('fs').style.display='none';
+  initLevel();
+}
 
 // ═══════════════
 //  INPUT
