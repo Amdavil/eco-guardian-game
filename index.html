@@ -489,47 +489,81 @@ const Audio_={
     }
   },
 
-  // ── AMBIENT MUSIC ──
+  // ── AMBIENT MUSIC ── chord progressions per environment, smoothly retuned pad + consonant melody
+  chordSets:{
+    // warm, cozy major7/minor7 voicings (4 voices)
+    house:[
+      [130.81,164.81,196.00,246.94], // Cmaj7
+      [110.00,130.81,164.81,196.00], // Am7
+      [87.31, 110.00,130.81,164.81], // Fmaj7
+      [98.00, 123.47,146.83,196.00], // G(sus-ish)
+    ],
+    // cooler, brighter "corporate ambient" voicings (4 voices)
+    office:[
+      [110.00,164.81,196.00,246.94], // Am9 (no 3rd)
+      [98.00, 146.83,196.00,246.94], // G add9
+      [130.81,196.00,246.94,329.63], // Cmaj9-ish
+      [87.31, 130.81,174.61,220.00], // Fmaj
+    ],
+  },
+
   startMusic(env){
     this.stopMusic();
     if(!this.ctx) return;
     this.musicEnv=env;
     const ctx=this.ctx;
+    const chords=this.chordSets[env]||this.chordSets.house;
 
-    // soft pad (two detuned oscillators through a filter, slow LFO)
-    const padFreqs=env==='office'?[110,164.81,220]:[130.81,164.81,196];
     const pad=ctx.createGain();pad.gain.value=0;pad.connect(this.musicGain);
     pad.gain.linearRampToValueAtTime(1,ctx.currentTime+2);
     const filt=ctx.createBiquadFilter();
-    filt.type='lowpass';filt.frequency.value=env==='office'?900:1400;
+    filt.type='lowpass';filt.frequency.value=env==='office'?1100:1500;
     filt.connect(pad);
-    const oscs=padFreqs.map((f,i)=>{
+
+    const voices=chords[0].length;
+    const oscs=[];
+    for(let i=0;i<voices;i++){
       const o=ctx.createOscillator();
-      o.type=i===1?'triangle':'sine';
-      o.frequency.value=f;
-      const og=ctx.createGain();og.gain.value=.5;
+      o.type=i%2===1?'triangle':'sine';
+      o.frequency.value=chords[0][i];
+      const og=ctx.createGain();og.gain.value=.4;
       o.connect(og);og.connect(filt);
       o.start();
-      return o;
-    });
-    // slow LFO on filter cutoff for movement
-    const lfo=ctx.createOscillator();lfo.frequency.value=env==='office'?.07:.05;
-    const lfoGain=ctx.createGain();lfoGain.gain.value=env==='office'?150:250;
+      oscs.push(o);
+    }
+    // slow LFO on filter cutoff for gentle movement
+    const lfo=ctx.createOscillator();lfo.frequency.value=env==='office'?.06:.045;
+    const lfoGain=ctx.createGain();lfoGain.gain.value=env==='office'?180:260;
     lfo.connect(lfoGain);lfoGain.connect(filt.frequency);lfo.start();
 
     this._padNodes={pad,filt,oscs,lfo};
 
-    // sparse melodic plucks scheduled in a loop
-    const scale=env==='office'
-      ?[440,493.88,523.25,587.33,659.25,698.46]
-      :[523.25,587.33,659.25,783.99,880];
+    // chord progression: smoothly retune pad voices every few seconds
+    let chordIdx=0;
+    const chordDur=env==='office'?5.5:6.5;
+    const advanceChord=()=>{
+      if(this.musicEnv!==env) return;
+      chordIdx=(chordIdx+1)%chords.length;
+      const next=chords[chordIdx];
+      const t=ctx.currentTime;
+      oscs.forEach((o,i)=>o.frequency.linearRampToValueAtTime(next[i],t+1.8));
+      this._curChord=next;
+      this.musicChordTimer=setTimeout(advanceChord,chordDur*1000);
+    };
+    this._curChord=chords[0];
+    this.musicChordTimer=setTimeout(advanceChord,chordDur*1000);
+
+    // gentle melodic plucks drawn from the active chord (consonant, "amena")
     const tick=()=>{
       if(this.musicEnv!==env) return;
-      if(Math.random()<(env==='office'?.55:.7)){
-        const f=scale[Math.floor(Math.random()*scale.length)]/(Math.random()<.3?2:1);
-        this.tone(f,1.2,'sine',.06,0,this.musicGain);
+      const prob=env==='office'?.6:.75;
+      if(Math.random()<prob){
+        const chord=this._curChord||chords[0];
+        const base=chord[Math.floor(Math.random()*chord.length)];
+        const f=base*(Math.random()<.55?2:1)*(Math.random()<.12?2:1);
+        this.tone(f,1.3,'sine',.07,0,this.musicGain);
       }
-      this.musicTimer=setTimeout(tick,env==='office'?1400:1100);
+      this.musicTimer=setTimeout(tick,env==='office'?1300:1000);
     };
     tick();
   },
@@ -537,6 +571,7 @@ const Audio_={
   stopMusic(){
     this.musicEnv=null;
     if(this.musicTimer){clearTimeout(this.musicTimer);this.musicTimer=null}
+    if(this.musicChordTimer){clearTimeout(this.musicChordTimer);this.musicChordTimer=null}
     if(this._padNodes){
       const {pad,oscs,lfo}=this._padNodes;
       const ctx=this.ctx;
@@ -685,11 +720,11 @@ house:{
     }
   ],
   walls:[
-    {a:'h',x:0,y:3.5,l:10,doors:[{at:1.8,sz:.9},{at:3.5,sz:.9},{at:7.5,sz:1}]},
-    {a:'v',x:4.5,y:0,l:3.5,doors:[{at:1.5,sz:.9}]},
-    {a:'v',x:8,y:0,l:3.5,doors:[{at:1.8,sz:.8}]},
-    {a:'v',x:2.5,y:3.5,l:3.5,doors:[{at:1.2,sz:.8}]},
-    {a:'v',x:6.5,y:3.5,l:3.5,doors:[{at:1.5,sz:1}]},
+    {a:'h',x:0,y:3.5,l:10,doors:[{at:1.7,sz:1.2},{at:3.4,sz:1.2},{at:7.4,sz:1.3}]},
+    {a:'v',x:4.5,y:0,l:3.5,doors:[{at:1.4,sz:1.3}]},
+    {a:'v',x:8,y:0,l:3.5,doors:[{at:1.7,sz:1.2}]},
+    {a:'v',x:2.5,y:3.5,l:3.5,doors:[{at:1.1,sz:1.2}]},
+    {a:'v',x:6.5,y:3.5,l:3.5,doors:[{at:1.4,sz:1.3}]},
   ]
 },
 
@@ -863,12 +898,12 @@ office:{
     }
   ],
   walls:[
-    {a:'h',x:0,y:3,l:11,doors:[{at:1,sz:.8},{at:3.5,sz:.8},{at:6.2,sz:.8},{at:9,sz:.8}]},
-    {a:'v',x:3.5,y:0,l:3,doors:[{at:1,sz:.9}]},
-    {a:'v',x:7.5,y:0,l:3,doors:[{at:1.2,sz:.8}]},
-    {a:'v',x:2.5,y:3,l:4,doors:[{at:1.5,sz:.8}]},
-    {a:'v',x:5.5,y:3,l:4,doors:[{at:1.5,sz:.8}]},
-    {a:'v',x:8,y:3,l:4,doors:[{at:1.2,sz:.8}]},
+    {a:'h',x:0,y:3,l:11,doors:[{at:.9,sz:1.2},{at:3.4,sz:1.2},{at:6.1,sz:1.2},{at:8.9,sz:1.2}]},
+    {a:'v',x:3.5,y:0,l:3,doors:[{at:.9,sz:1.3}]},
+    {a:'v',x:7.5,y:0,l:3,doors:[{at:1.1,sz:1.2}]},
+    {a:'v',x:2.5,y:3,l:4,doors:[{at:1.4,sz:1.2}]},
+    {a:'v',x:5.5,y:3,l:4,doors:[{at:1.4,sz:1.2}]},
+    {a:'v',x:8,y:3,l:4,doors:[{at:1.1,sz:1.2}]},
   ]
 }
 
@@ -958,6 +993,7 @@ function buildHouse(){
   house.innerHTML='';
   calcScale();
   const s=G.scale;
+  G.colliders=[];
   buildExterior();
 
   // add parking lot lines for office
@@ -1073,6 +1109,10 @@ function mkWall(axis,x,y,len,office){
   w.style.left=x+'px';w.style.top=y+'px';
   if(axis==='h')w.style.width=len+'px';else w.style.height=len+'px';
   house.appendChild(w);
+  // register collider in absolute page coords (house is offset by G.ox,G.oy)
+  const THICK=8;
+  if(axis==='h') G.colliders.push({x:G.ox+x,y:G.oy+y,w:len,h:THICK});
+  else G.colliders.push({x:G.ox+x,y:G.oy+y,w:THICK,h:len});
 }
 
 function mkDoor(axis,x,y,len,office){
@@ -1137,16 +1177,28 @@ function renderPlayer(){
   $('ps').style.left=(G.px+4)+'px';$('ps').style.top=(G.py+30)+'px';
   checkNearby();
 }
+function rectHits(x,y,w,h){
+  for(const c of (G.colliders||[])){
+    if(x<c.x+c.w && x+w>c.x && y<c.y+c.h && y+h>c.y) return true;
+  }
+  return false;
+}
 function mv(dir){
   if(!G.running)return;
   const env=curEnv();
   const sp=3.5*G.scale*3;
   const mnX=G.ox+12,mxX=G.ox+u(env.W)-28;
   const mnY=G.oy+12,mxY=G.oy+u(env.H)-28;
-  if(dir==='up')G.py=Math.max(mnY,G.py-sp);
-  if(dir==='down')G.py=Math.min(mxY,G.py+sp);
-  if(dir==='left')G.px=Math.max(mnX,G.px-sp);
-  if(dir==='right')G.px=Math.min(mxX,G.px+sp);
+  let nx=G.px,ny=G.py;
+  if(dir==='up')ny=Math.max(mnY,G.py-sp);
+  if(dir==='down')ny=Math.min(mxY,G.py+sp);
+  if(dir==='left')nx=Math.max(mnX,G.px-sp);
+  if(dir==='right')nx=Math.min(mxX,G.px+sp);
+
+  // hitbox inset from the 28px player sprite, checked per-axis so the player slides along walls
+  const HB=16,INS=6;
+  if(!rectHits(nx+INS,G.py+INS,HB,HB)) G.px=nx;
+  if(!rectHits(G.px+INS,ny+INS,HB,HB)) G.py=ny;
   renderPlayer();
 }
 function checkNearby(){
