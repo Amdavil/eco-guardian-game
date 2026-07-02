@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🌍 EcoGuardián - Salva el Planeta</title>
+<title>🌍 EcoGuardián · Project-Ability</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-action:none;user-select:none;height:100vh;width:100vw}
@@ -28,7 +28,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 
 /* ROOM */
 .room{position:absolute;overflow:hidden}
-.room-floor{position:absolute;top:0;left:0;right:0;bottom:0}
+.room-floor{position:absolute;top:0;left:0;right:0;bottom:0;box-shadow:inset 0 0 34px rgba(0,0,0,.28)}
 .room-glow{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:2}
 .room-label{position:absolute;top:13px;left:0;right:0;text-align:center;font-size:8px;text-transform:uppercase;letter-spacing:2.5px;color:rgba(255,255,255,.3);z-index:15;font-weight:700}
 
@@ -67,7 +67,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 
 /* ceiling light fixture — home (warm) */
 .ceil-light{position:absolute;z-index:16;pointer-events:none}
-.ceil-light-body{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,200,.6),rgba(255,220,150,.3),transparent 70%);border:1px solid rgba(255,220,150,.25);box-shadow:0 0 20px rgba(255,220,150,.15)}
+.ceil-light-body{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,200,.7),rgba(255,220,150,.35),transparent 70%);border:1px solid rgba(255,220,150,.3);box-shadow:0 0 30px rgba(255,220,150,.28),0 0 60px rgba(255,210,130,.12)}
 
 /* ═══ OFFICE THEME OVERRIDES ═══ */
 /* office outer walls: steel gray/blue */
@@ -111,8 +111,8 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .fl-wood{
   background:
     repeating-linear-gradient(95deg,
-      rgba(139,105,20,.22) 0px,rgba(154,117,32,.18) 3px,rgba(139,105,20,.22) 18px,
-      rgba(122,90,16,.25) 20px,rgba(139,105,20,.22) 38px);
+      rgba(165,122,40,.28) 0px,rgba(182,138,52,.22) 3px,rgba(165,122,40,.28) 18px,
+      rgba(142,102,28,.3) 20px,rgba(165,122,40,.28) 38px);
   background-size:38px 100%;
 }
 .fl-wood::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
@@ -147,7 +147,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   background:
     repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 1px,transparent 1px,transparent 22px),
     repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0px,rgba(255,255,255,.06) 1px,transparent 1px,transparent 22px),
-    linear-gradient(135deg,rgba(150,155,170,.14),rgba(130,135,150,.1));
+    linear-gradient(135deg,rgba(170,178,195,.18),rgba(145,152,170,.12));
 }
 .fl-office-carpet{
   background:url("data:image/svg+xml,%3Csvg width='8' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='8' height='8' fill='%23283040'/%3E%3Ccircle cx='2' cy='2' r='1.2' fill='%23303848'/%3E%3Ccircle cx='6' cy='6' r='1.2' fill='%23303848'/%3E%3C/svg%3E");
@@ -263,6 +263,12 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .bs{font-size:12px;padding:8px 22px;margin-top:6px;background:linear-gradient(135deg,#748ffc,#4263eb);color:#fff;box-shadow:0 3px 10px rgba(66,99,235,.35);border:none;border-radius:18px;cursor:pointer}
 .et{margin-top:12px;padding:8px 12px;background:rgba(81,207,102,.1);border-radius:8px;border:1px solid rgba(81,207,102,.2);font-size:11px;color:#a0d995;max-width:300px}
 .sr{font-size:30px;margin:6px 0}
+
+/* ═══ PROJECT-ABILITY BRANDING ═══ */
+.brand-logo{display:block;margin:0 auto 6px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.brand-footer{margin-top:16px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;justify-content:center;opacity:.85}
+.brand-footer span{font-size:9px;color:#8aa86a;letter-spacing:1.5px;text-transform:uppercase}
+#brand-badge{position:absolute;top:38px;right:8px;z-index:99;opacity:.55;pointer-events:none}
 </style>
 </head>
 <body>
@@ -275,6 +281,15 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <div class="st" id="mute-btn" style="cursor:pointer" onclick="toggleMute()">🔊</div>
   </div>
   <div id="pw"><div id="pf"></div></div>
+  <div id="brand-badge">
+    <svg viewBox="0 0 430 100" width="94" height="22" xmlns="http://www.w3.org/2000/svg">
+      <g fill="#7fae4a">
+        <path d="M14 34 L30 18 L30 74 L14 88 Z"/>
+        <path d="M36 4 L74 4 L96 26 L74 48 L56 48 L56 72 L36 72 Z M56 20 L56 32 L66 32 L72 26 L66 20 Z"/>
+      </g>
+      <text x="110" y="52" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="40" fill="#7fae4a" letter-spacing="3">PROJECT-ABILITY</text>
+    </svg>
+  </div>
   <div id="exterior"></div>
   <div id="house"></div>
   <div id="pl">🧑</div>
@@ -290,6 +305,14 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <div id="dh">⌨️ Flechas/WASD mover · Espacio interactuar</div>
 
   <div class="ov" id="ss">
+    <svg class="brand-logo" viewBox="0 0 430 100" width="240" height="56" xmlns="http://www.w3.org/2000/svg">
+      <g fill="#7fae4a">
+        <path d="M14 34 L30 18 L30 74 L14 88 Z"/>
+        <path d="M36 4 L74 4 L96 26 L74 48 L56 48 L56 72 L36 72 Z M56 20 L56 32 L66 32 L72 26 L66 20 Z"/>
+      </g>
+      <text x="110" y="42" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="34" fill="#7fae4a" letter-spacing="3">PROJECT-ABILITY</text>
+      <text x="112" y="72" font-family="'Segoe UI',Arial,sans-serif" font-weight="600" font-size="15.5" fill="#9dc06e" letter-spacing="1">SYNERGIES SUSTAINABILITY PROJECTIONS</text>
+    </svg>
     <div class="big">🏡🌍</div>
     <h1>EcoGuardián</h1>
     <h2>¡Salva el Planeta!</h2>
@@ -298,6 +321,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <p style="font-size:11px;color:#888">💡 Apaga luces · 🚰 Cierra grifos · 🔌 Desconecta aparatos</p>
     <div class="et">🌱 Un hogar promedio desperdicia 30% de energía y agua por descuidos diarios</div>
     <button class="bg" onclick="startGame()">▶️ ¡Jugar!</button>
+    <div class="brand-footer"><span>Un juego de Project-Ability</span></div>
   </div>
 
   <!-- TRANSITION SCREEN -->
@@ -329,6 +353,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <div style="text-align:left;max-width:320px;font-size:11px;color:#bbb;line-height:1.6" id="el-tips"></div>
     <button class="bg" id="en" onclick="nextLevel()">▶️ Siguiente</button>
     <button class="bs" onclick="restartGame()">🔄 Reiniciar</button>
+    <div class="brand-footer"><span>Project-Ability · Synergies Sustainability Projections</span></div>
   </div>
 
   <!-- FINAL REFLECTION SCREEN -->
@@ -383,6 +408,16 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 
     <button class="bg" style="margin-top:14px" onclick="restartGame()">🔄 Jugar de Nuevo</button>
     <button class="bs" style="margin-top:6px" onclick="shareGame()">📤 Compartir</button>
+    <div class="brand-footer">
+      <svg viewBox="0 0 430 100" width="150" height="35" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#7fae4a">
+          <path d="M14 34 L30 18 L30 74 L14 88 Z"/>
+          <path d="M36 4 L74 4 L96 26 L74 48 L56 48 L56 72 L36 72 Z M56 20 L56 32 L66 32 L72 26 L66 20 Z"/>
+        </g>
+        <text x="110" y="42" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="34" fill="#7fae4a" letter-spacing="3">PROJECT-ABILITY</text>
+        <text x="112" y="72" font-family="'Segoe UI',Arial,sans-serif" font-weight="600" font-size="15.5" fill="#9dc06e" letter-spacing="1">SYNERGIES SUSTAINABILITY PROJECTIONS</text>
+      </svg>
+    </div>
   </div>
 </div>
 
@@ -600,8 +635,11 @@ house:{
   name:'Casa',icon:'🏠',
   W:10,H:7,
   exteriorBg:`
-    radial-gradient(ellipse at 50% 50%,rgba(25,60,25,.5),rgba(15,40,15,.7)),
-    repeating-conic-gradient(rgba(30,70,30,.18) 0% 25%,rgba(22,55,22,.12) 0% 50%) 0 0/14px 14px`,
+    radial-gradient(circle at 18% 8%,rgba(255,235,160,.16),transparent 42%),
+    radial-gradient(circle at 82% 90%,rgba(120,200,120,.1),transparent 45%),
+    radial-gradient(ellipse at 50% 50%,rgba(40,90,40,.5),rgba(18,48,18,.72)),
+    repeating-conic-gradient(rgba(45,95,45,.2) 0% 25%,rgba(30,70,30,.13) 0% 50%) 0 0/14px 14px,
+    linear-gradient(180deg,#14351a,#0f2a12)`,
   exteriorItems:[
     {e:'🌳',x:-.8,y:1,s:32},{e:'🌳',x:-.7,y:4.5,s:28},{e:'🌲',x:10.5,y:.5,s:30},
     {e:'🌲',x:10.6,y:3,s:26},{e:'🌳',x:10.4,y:5.5,s:30},
@@ -616,7 +654,7 @@ house:{
     {
       id:'sala',name:'Sala',floor:'fl-wood',
       x:0,y:0,w:4.5,h:3.5,
-      ambient:'rgba(255,210,120,.14)',
+      ambient:'rgba(255,210,120,.22)',
       furniture:[
         {t:'f-sofa',x:.5,y:2,e:'🛋️',es:20},
         {t:'f-table',x:1.8,y:1.3,e:'',es:0},
@@ -635,7 +673,7 @@ house:{
     {
       id:'cocina',name:'Cocina',floor:'fl-kitchen',
       x:4.5,y:0,w:3.5,h:3.5,
-      ambient:'rgba(255,230,150,.15)',
+      ambient:'rgba(255,230,150,.23)',
       furniture:[
         {t:'f-counter',x:.15,y:.2,cw:'90%',e:'',es:0},
         {t:'f-fridge',x:2.8,y:.3,e:'',es:0},
@@ -654,7 +692,7 @@ house:{
     {
       id:'lavadero',name:'Lavadero',floor:'fl-tile',
       x:8,y:0,w:2,h:3.5,
-      ambient:'rgba(200,220,255,.1)',
+      ambient:'rgba(200,220,255,.17)',
       furniture:[
         {t:'f-washer',x:.4,y:.4,e:'🫧',es:12},
         {t:'f-shelf',x:.5,y:2.5,e:'🧴',es:12},
@@ -668,7 +706,7 @@ house:{
     {
       id:'bano',name:'Baño',floor:'fl-tile',
       x:0,y:3.5,w:2.5,h:3.5,
-      ambient:'rgba(180,220,255,.12)',
+      ambient:'rgba(180,220,255,.19)',
       furniture:[
         {t:'f-toilet',x:.3,y:2.3,e:'🚽',es:14},
         {t:'f-tub',x:1.2,y:2.4,e:'',es:0},
@@ -686,7 +724,7 @@ house:{
     {
       id:'dormitorio',name:'Dormitorio',floor:'fl-carpet',
       x:2.5,y:3.5,w:4,h:3.5,
-      ambient:'rgba(200,180,255,.1)',
+      ambient:'rgba(230,200,255,.16)',
       furniture:[
         {t:'f-bed',x:1,y:.9,e:'🛏️',es:20},
         {t:'f-ns',x:.2,y:1.4,e:'',es:0},{t:'f-ns',x:2.8,y:1.4,e:'',es:0},
@@ -706,7 +744,7 @@ house:{
     {
       id:'garage',name:'Garaje',floor:'fl-concrete',
       x:6.5,y:3.5,w:3.5,h:3.5,
-      ambient:'rgba(200,180,130,.07)',
+      ambient:'rgba(220,200,150,.12)',
       furniture:[
         {t:'f-car',x:1.3,y:.8,e:'🚗',es:22},
         {t:'f-shelf',x:.2,y:.2,e:'🧰',es:12},{t:'f-shelf',x:.2,y:.7,e:'🔧',es:12},
@@ -734,10 +772,12 @@ office:{
   theme:'office',
   W:11,H:7,
   exteriorBg:`
-    radial-gradient(ellipse at 50% 60%,rgba(50,50,60,.5),rgba(30,30,40,.8)),
-    repeating-linear-gradient(0deg,rgba(80,80,90,.06) 0px,rgba(80,80,90,.06) 1px,transparent 1px,transparent 40px),
-    repeating-linear-gradient(90deg,rgba(80,80,90,.06) 0px,rgba(80,80,90,.06) 1px,transparent 1px,transparent 40px),
-    #181820`,
+    radial-gradient(circle at 80% 5%,rgba(255,180,110,.12),transparent 38%),
+    radial-gradient(circle at 12% 85%,rgba(110,160,255,.08),transparent 42%),
+    radial-gradient(ellipse at 50% 60%,rgba(58,62,78,.5),rgba(28,30,42,.82)),
+    repeating-linear-gradient(0deg,rgba(90,95,110,.07) 0px,rgba(90,95,110,.07) 1px,transparent 1px,transparent 40px),
+    repeating-linear-gradient(90deg,rgba(90,95,110,.07) 0px,rgba(90,95,110,.07) 1px,transparent 1px,transparent 40px),
+    linear-gradient(180deg,#1c1e2a,#15161f)`,
   foundationColor:'#28283a',
   exteriorItems:[
     // parking lot - bottom
@@ -1361,7 +1401,7 @@ function showFinalScreen(){
 function shareGame(){
   Audio_.sfx('click');
   const url='https://amdavil.github.io/eco-guardian-game/';
-  const text='🌍 ¡Jugué EcoGuardián y aprendí a ahorrar agua y energía! ¿Puedes superar mi puntaje de '+G.total+' ⭐? Juega aquí: ';
+  const text='🌍 ¡Jugué EcoGuardián de Project-Ability y aprendí a ahorrar agua y energía! ¿Puedes superar mi puntaje de '+G.total+' ⭐? Juega aquí: ';
   if(navigator.share){
     navigator.share({title:'EcoGuardián',text:text,url:url}).catch(()=>{});
   } else {
