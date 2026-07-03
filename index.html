@@ -268,7 +268,10 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 .brand-logo{display:block;margin:0 auto 6px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 .brand-footer{margin-top:16px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;justify-content:center;opacity:.85}
 .brand-footer span{font-size:9px;color:#8aa86a;letter-spacing:1.5px;text-transform:uppercase}
-#brand-badge{position:absolute;top:38px;right:8px;z-index:99;opacity:.55;pointer-events:none}
+#brand-badge{position:absolute;top:38px;right:8px;z-index:99;opacity:.6;pointer-events:none}
+#wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;opacity:.13;pointer-events:none;filter:grayscale(.2)}
+.pa-logo svg{display:block;filter:drop-shadow(0 1px 4px rgba(0,0,0,.4))}
+#wm .pa-logo svg{filter:none}
 </style>
 </head>
 <body>
@@ -281,15 +284,8 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
     <div class="st" id="mute-btn" style="cursor:pointer" onclick="toggleMute()">🔊</div>
   </div>
   <div id="pw"><div id="pf"></div></div>
-  <div id="brand-badge">
-    <svg viewBox="0 0 430 100" width="94" height="22" xmlns="http://www.w3.org/2000/svg">
-      <g fill="#7fae4a">
-        <path d="M14 34 L30 18 L30 74 L14 88 Z"/>
-        <path d="M36 4 L74 4 L96 26 L74 48 L56 48 L56 72 L36 72 Z M56 20 L56 32 L66 32 L72 26 L66 20 Z"/>
-      </g>
-      <text x="110" y="52" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="40" fill="#7fae4a" letter-spacing="3">PROJECT-ABILITY</text>
-    </svg>
-  </div>
+  <div id="brand-badge"><div class="pa-logo" data-w="100"></div></div>
+  <div id="wm"><div class="pa-logo" data-w="0"></div></div>
   <div id="exterior"></div>
   <div id="house"></div>
   <div id="pl">🧑</div>
@@ -305,14 +301,7 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
   <div id="dh">⌨️ Flechas/WASD mover · Espacio interactuar</div>
 
   <div class="ov" id="ss">
-    <svg class="brand-logo" viewBox="0 0 430 100" width="240" height="56" xmlns="http://www.w3.org/2000/svg">
-      <g fill="#7fae4a">
-        <path d="M14 34 L30 18 L30 74 L14 88 Z"/>
-        <path d="M36 4 L74 4 L96 26 L74 48 L56 48 L56 72 L36 72 Z M56 20 L56 32 L66 32 L72 26 L66 20 Z"/>
-      </g>
-      <text x="110" y="42" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="34" fill="#7fae4a" letter-spacing="3">PROJECT-ABILITY</text>
-      <text x="112" y="72" font-family="'Segoe UI',Arial,sans-serif" font-weight="600" font-size="15.5" fill="#9dc06e" letter-spacing="1">SYNERGIES SUSTAINABILITY PROJECTIONS</text>
-    </svg>
+    <div class="pa-logo" data-w="250"></div>
     <div class="big">🏡🌍</div>
     <h1>EcoGuardián</h1>
     <h2>¡Salva el Planeta!</h2>
@@ -408,21 +397,30 @@ body{background:#0d1a0d;font-family:'Segoe UI',sans-serif;overflow:hidden;touch-
 
     <button class="bg" style="margin-top:14px" onclick="restartGame()">🔄 Jugar de Nuevo</button>
     <button class="bs" style="margin-top:6px" onclick="shareGame()">📤 Compartir</button>
-    <div class="brand-footer">
-      <svg viewBox="0 0 430 100" width="150" height="35" xmlns="http://www.w3.org/2000/svg">
-        <g fill="#7fae4a">
-          <path d="M14 34 L30 18 L30 74 L14 88 Z"/>
-          <path d="M36 4 L74 4 L96 26 L74 48 L56 48 L56 72 L36 72 Z M56 20 L56 32 L66 32 L72 26 L66 20 Z"/>
-        </g>
-        <text x="110" y="42" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="34" fill="#7fae4a" letter-spacing="3">PROJECT-ABILITY</text>
-        <text x="112" y="72" font-family="'Segoe UI',Arial,sans-serif" font-weight="600" font-size="15.5" fill="#9dc06e" letter-spacing="1">SYNERGIES SUSTAINABILITY PROJECTIONS</text>
-      </svg>
-    </div>
+    <div class="brand-footer"><div class="pa-logo" data-w="170"></div></div>
   </div>
 </div>
 
 <script>
 const U=70;
+
+// ═══ PROJECT-ABILITY LOGO (single source, injected wherever .pa-logo appears) ═══
+function paLogoSVG(w){
+  const h=Math.round(w*110/470);
+  return `<svg viewBox="0 0 470 110" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#7fae4a">
+      <path d="M8 38 L26 20 L26 96 L8 78 Z"/>
+      <path d="M34 24 L74 24 L74 6 L118 36 L74 66 L74 48 L34 48 Z"/>
+    </g>
+    <text x="132" y="49" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="34" fill="#7fae4a" textLength="326" lengthAdjust="spacingAndGlyphs">PROJECT-ABILITY</text>
+    <text x="133" y="78" font-family="'Segoe UI',Arial,sans-serif" font-weight="600" font-size="15" fill="#9dc06e" textLength="324" lengthAdjust="spacingAndGlyphs">SYNERGIES SUSTAINABILITY PROJECTIONS</text>
+  </svg>`;
+}
+document.querySelectorAll('.pa-logo').forEach(el=>{
+  let w=parseInt(el.dataset.w,10);
+  if(!w) w=Math.min(360,Math.round(window.innerWidth*.55)); // watermark: scale to screen
+  el.innerHTML=paLogoSVG(w);
+});
 
 // ═══════════════════════════════════════
 //  AUDIO ENGINE (synthesized, no external files)
@@ -439,8 +437,15 @@ const Audio_={
     this.master.gain.value=1;
     this.master.connect(this.ctx.destination);
     this.musicGain=this.ctx.createGain();
-    this.musicGain.gain.value=.16;
+    this.musicGain.gain.value=.15;
     this.musicGain.connect(this.master);
+    // gentle echo for spaciousness (softens the ambient music)
+    const dly=this.ctx.createDelay(1.5);dly.delayTime.value=.42;
+    const fb=this.ctx.createGain();fb.gain.value=.32;
+    const wet=this.ctx.createGain();wet.gain.value=.22;
+    const damp=this.ctx.createBiquadFilter();damp.type='lowpass';damp.frequency.value=1600;
+    this.musicGain.connect(dly);dly.connect(damp);damp.connect(fb);fb.connect(dly);
+    damp.connect(wet);wet.connect(this.master);
     this.sfxGain=this.ctx.createGain();
     this.sfxGain.gain.value=.35;
     this.sfxGain.connect(this.master);
@@ -556,22 +561,28 @@ const Audio_={
     filt.connect(pad);
 
     const voices=chords[0].length;
-    const oscs=[];
+    const oscs=[];      // primary oscillators (retuned on chord change)
+    const oscsDet=[];   // slightly detuned twins for warm chorus
     for(let i=0;i<voices;i++){
+      const og=ctx.createGain();og.gain.value=.3;og.connect(filt);
       const o=ctx.createOscillator();
-      o.type=i%2===1?'triangle':'sine';
+      o.type='sine';
       o.frequency.value=chords[0][i];
-      const og=ctx.createGain();og.gain.value=.4;
-      o.connect(og);og.connect(filt);
-      o.start();
+      o.connect(og);o.start();
       oscs.push(o);
+      const o2=ctx.createOscillator();
+      o2.type='triangle';
+      o2.frequency.value=chords[0][i]*1.003; // ~5 cents sharp → gentle shimmer
+      const og2=ctx.createGain();og2.gain.value=.12;og2.connect(filt);
+      o2.connect(og2);o2.start();
+      oscsDet.push(o2);
     }
     // slow LFO on filter cutoff for gentle movement
     const lfo=ctx.createOscillator();lfo.frequency.value=env==='office'?.06:.045;
     const lfoGain=ctx.createGain();lfoGain.gain.value=env==='office'?180:260;
     lfo.connect(lfoGain);lfoGain.connect(filt.frequency);lfo.start();
 
-    this._padNodes={pad,filt,oscs,lfo};
+    this._padNodes={pad,filt,oscs:[...oscs,...oscsDet],lfo};
 
     // chord progression: smoothly retune pad voices every few seconds
     let chordIdx=0;
@@ -581,26 +592,36 @@ const Audio_={
       chordIdx=(chordIdx+1)%chords.length;
       const next=chords[chordIdx];
       const t=ctx.currentTime;
-      oscs.forEach((o,i)=>o.frequency.linearRampToValueAtTime(next[i],t+1.8));
+      oscs.forEach((o,i)=>o.frequency.linearRampToValueAtTime(next[i],t+2.2));
+      oscsDet.forEach((o,i)=>o.frequency.linearRampToValueAtTime(next[i]*1.003,t+2.2));
       this._curChord=next;
       this.musicChordTimer=setTimeout(advanceChord,chordDur*1000);
     };
     this._curChord=chords[0];
     this.musicChordTimer=setTimeout(advanceChord,chordDur*1000);
 
-    // gentle melodic plucks drawn from the active chord (consonant, "amena")
+    // soft bell motifs drawn from the active chord — sparse, consonant, dreamy
+    const bell=(f,vol,delay)=>{
+      // fundamental + quiet octave partial with slow decay = music-box feel
+      this.tone(f,2.4,'sine',vol,delay,this.musicGain);
+      this.tone(f*2,1.6,'sine',vol*.28,delay,this.musicGain);
+    };
     const tick=()=>{
       if(this.musicEnv!==env) return;
-      const prob=env==='office'?.6:.75;
+      const prob=env==='office'?.5:.6;
       if(Math.random()<prob){
         const chord=this._curChord||chords[0];
-        const base=chord[Math.floor(Math.random()*chord.length)];
-        const f=base*(Math.random()<.55?2:1)*(Math.random()<.12?2:1);
-        this.tone(f,1.3,'sine',.07,0,this.musicGain);
+        // pick 1-3 ascending chord tones an octave up → tiny arpeggio motif
+        const start=Math.floor(Math.random()*chord.length);
+        const n=1+Math.floor(Math.random()*3);
+        for(let k=0;k<n;k++){
+          const f=chord[(start+k)%chord.length]*2*(start+k>=chord.length?2:1);
+          bell(f,.045,k*.42);
+        }
       }
-      this.musicTimer=setTimeout(tick,env==='office'?1300:1000);
+      this.musicTimer=setTimeout(tick,env==='office'?2600:2200);
     };
-    tick();
+    this.musicTimer=setTimeout(tick,1500);
   },
 
   stopMusic(){
